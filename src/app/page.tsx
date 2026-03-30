@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Playfair_Display } from "next/font/google";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PresetLook } from "../lib/preset-looks";
+import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
 const brandSerif = Playfair_Display({
   subsets: ["latin"],
@@ -444,7 +445,7 @@ export default function HomePage() {
               </motion.div>
             )}
 
-            {currentStep === 2 && (
+            {currentStep === 2 && !isSubmitting && (
               <motion.div
                 key="s2"
                 initial={{ opacity: 0, y: 12 }}
@@ -522,16 +523,23 @@ export default function HomePage() {
                 <div className="mb-8 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
                   {personPreview && (
                     <div className="flex flex-col items-center gap-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={personPreview}
-                        alt=""
-                        className="h-28 w-28 rounded-xl border border-white/15 object-cover sm:h-32 sm:w-32"
-                      />
+                      <div
+                        className={`relative overflow-hidden rounded-xl border border-white/15 bg-black/40 ${
+                          isSubmitting ? "h-64 w-48 sm:h-80 sm:w-56" : "h-28 w-28 sm:h-32 sm:w-32"
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={personPreview}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                        <BodyScanOverlay active={isSubmitting} />
+                      </div>
                       <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">You</span>
                     </div>
                   )}
-                  {garmentPreview && (
+                  {garmentPreview && !isSubmitting && (
                     <div className="flex flex-col items-center gap-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -554,12 +562,11 @@ export default function HomePage() {
                   type="button"
                   disabled={!personFile || !garmentFile || isSubmitting}
                   onClick={() => void handleGenerate()}
-                  className="relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden rounded-2xl border-2 border-white bg-black px-8 py-4 text-base font-bold uppercase tracking-[0.28em] text-white shadow-[0_0_48px_rgba(255,40,0,0.55),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[filter,box-shadow] hover:shadow-[0_0_56px_rgba(255,40,0,0.7)] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden rounded-2xl border-2 border-white bg-black px-6 py-4 text-base font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_48px_rgba(255,40,0,0.55),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[filter,box-shadow] hover:shadow-[0_0_56px_rgba(255,40,0,0.7)] disabled:cursor-not-allowed disabled:opacity-40 sm:px-8 sm:tracking-[0.2em]"
                 >
                   {isSubmitting ? (
-                    <span className="inline-flex items-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Generating
+                    <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white sm:text-sm sm:tracking-[0.1em]">
+                      AI Analysis &amp; Lingerie Fusion in Progress...
                     </span>
                   ) : (
                     "Try it on"
@@ -568,8 +575,9 @@ export default function HomePage() {
 
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => setCurrentStep(2)}
-                  className="mt-6 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white"
+                  className="mt-6 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Back
                 </button>
