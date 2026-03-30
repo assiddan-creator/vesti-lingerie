@@ -12,7 +12,6 @@ import {
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
-const HERO_MAIN_IMAGE = "/Luxury_fashion_flat_202603252000.jpeg";
 const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpeg";
 
 /** Premium shield: black fill, white border & text, always-visible #FF2800 glow */
@@ -486,38 +485,52 @@ export default function HomePage() {
       <div className="pointer-events-none fixed inset-0 z-[1] bg-black/40" aria-hidden />
 
       <div className="relative z-10 flex w-full flex-col">
-        <section
-          className="relative h-[180px] w-full shrink-0 overflow-hidden text-center"
-          aria-label="Vesti Lingerie"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={HERO_MAIN_IMAGE}
-            alt=""
-            className="absolute inset-0 h-full w-full"
-            style={{ objectFit: "cover", objectPosition: "center 30%" }}
-          />
-          <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent"
-            aria-hidden
-          />
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-            <span className="font-serif text-[38px] font-normal text-white" style={{ letterSpacing: "16px" }}>
-              VESTI
-            </span>
-            <div className="my-2 h-px w-[120px] shrink-0 bg-[#FF2800]" aria-hidden />
-            <span
-              className="font-sans text-[10px] uppercase text-[#FF2800]"
-              style={{ letterSpacing: "10px" }}
-            >
-              LINGERIE
-            </span>
-          </div>
-        </section>
-
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
-        <header className="mb-10 flex w-full flex-col items-center text-center">
-          <p className="mx-auto max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
+        <header className="mb-10 w-full">
+          <div className="relative w-full overflow-hidden" style={{ height: "220px" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/Luxury_fashion_flat_202603252000.jpeg"
+              alt="Vesti Lingerie"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+              style={{ objectPosition: "center 35%" }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%)",
+              }}
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+              <h1
+                style={{
+                  fontFamily: "Georgia, serif",
+                  fontSize: "48px",
+                  fontWeight: "700",
+                  letterSpacing: "18px",
+                  color: "#ffffff",
+                  margin: 0,
+                  lineHeight: 1,
+                }}
+              >
+                VESTI
+              </h1>
+              <div style={{ width: "100px", height: "1px", background: "#FF2800", opacity: 0.9 }} />
+              <p
+                style={{
+                  fontFamily: "sans-serif",
+                  fontSize: "11px",
+                  fontWeight: "300",
+                  letterSpacing: "8px",
+                  color: "#FF2800",
+                  margin: 0,
+                }}
+              >
+                LINGERIE
+              </p>
+            </div>
+          </div>
+          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
             Private try-on. One portrait. Your set. Instant confidence.
           </p>
         </header>
@@ -601,7 +614,7 @@ export default function HomePage() {
                           }
                         >
                           <div
-                            className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl bg-black"
+                            className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl"
                             style={{
                               backgroundImage: "url(/Black_velvet_background_202603301114.jpeg)",
                               backgroundSize: "cover",
