@@ -79,12 +79,19 @@ function extractUrlFromFirstItem(firstItem: unknown): string | null {
   return null;
 }
 
-function buildSeedreamPrompt(refinePrompt: string | null) {
-  // Seedream 5.0 Lite: two-image virtual try-on + directed lingerie aesthetic (see product prompt below).
+function sanitizeGarmentDescription(raw: string): string {
+  const t = raw.replace(/\s+/g, " ").trim();
+  if (t.length === 0) return "the garment shown in Image B";
+  return t.length > 600 ? `${t.slice(0, 597)}…` : t;
+}
+
+function buildSeedreamPrompt(refinePrompt: string | null, garmentDescription: string) {
+  const garment = sanitizeGarmentDescription(garmentDescription);
+
   const basePrompt = [
-    "You are given two reference images: Image A is the target person photograph. Image B is the lingerie or garment reference (flat lay, product shot, or worn reference). Use Image B for the clothing design, color, pattern, and fabric; apply it to the person in Image A.",
+    "You are given two reference images: Image A is the target person photograph. Image B is the garment reference (flat lay, product shot, or worn reference). Use Image B for the clothing design, color, pattern, cut, and fabric; apply it faithfully to the person in Image A.",
     "",
-    "Transform the user's clothing into the specified dark red patterned lingerie/sleepwear two-piece set, maintaining the user's original face, identity, and exact standing pose. Transfer only the clothing from Image B onto the person in Image A; do not replace identity.",
+    `Transform the user's clothing into the target garment (${garment}), maintaining the user's original face, identity, and exact standing pose. Transfer only the clothing from Image B onto the person in Image A; do not replace identity.`,
     "",
     "CRITICAL FIX — lower body and legs:",
     "Ensure the entire lower body structure below the shorts (legs, ankles, and feet) is completely streamlined, slender, and delicately proportioned.",
@@ -94,7 +101,7 @@ function buildSeedreamPrompt(refinePrompt: string | null) {
     "",
     "Quality and scene:",
     "Seamlessly blend the new garment onto the body without artificial edges or distortions. Avoid warped limbs or duplicated joints.",
-    "Maintain consistent lighting and background: deep black velvet with scattered rich red rose petals (match this mood if Image A differs; otherwise harmonize with Image A’s scene).",
+    "Maintain consistent lighting and a high-end background of deep black velvet with scattered rich red rose petals (harmonize with Image A if its scene differs, while preserving this luxury mood).",
     "",
     "Output one single high-quality photorealistic edited image.",
   ].join("\n");
@@ -181,9 +188,15 @@ export async function POST(request: Request) {
         ? refinePromptRaw.trim()
         : null;
 
+    const garmentDescRaw = form.get("garmentDescription");
+    const garmentDescription =
+      typeof garmentDescRaw === "string" && garmentDescRaw.trim().length > 0
+        ? garmentDescRaw.trim()
+        : "the garment shown in Image B";
+
     const replicate = new Replicate({ auth: replicateToken });
     const model = "bytedance/seedream-5-lite" as const;
-    const prompt = buildSeedreamPrompt(refinePrompt);
+    const prompt = buildSeedreamPrompt(refinePrompt, garmentDescription);
 
     const [targetDataUrl, garmentDataUrl] = await Promise.all([
       fileToDataUrl(target),

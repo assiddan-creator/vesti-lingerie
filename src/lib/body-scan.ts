@@ -28,6 +28,38 @@ export const FALLBACK_KEYPOINTS: BodyKeypoints = {
 
 export const FALLBACK_MEASUREMENTS: [string, string, string, string] = ["—", "—", "—", "—"];
 
+/**
+ * Maps vision keypoints (0–1 in full image space) to percentage positions inside a container
+ * that displays the image with CSS `object-contain` (letterboxed).
+ */
+export function mapNormalizedToContainBox(
+  nx: number,
+  ny: number,
+  containerW: number,
+  containerH: number,
+  naturalW: number,
+  naturalH: number,
+): { xPct: number; yPct: number } {
+  if (
+    containerW <= 0 ||
+    containerH <= 0 ||
+    naturalW <= 0 ||
+    naturalH <= 0 ||
+    !Number.isFinite(nx) ||
+    !Number.isFinite(ny)
+  ) {
+    return { xPct: nx * 100, yPct: ny * 100 };
+  }
+  const scale = Math.min(containerW / naturalW, containerH / naturalH);
+  const dispW = naturalW * scale;
+  const dispH = naturalH * scale;
+  const offX = (containerW - dispW) / 2;
+  const offY = (containerH - dispH) / 2;
+  const px = offX + nx * dispW;
+  const py = offY + ny * dispH;
+  return { xPct: (px / containerW) * 100, yPct: (py / containerH) * 100 };
+}
+
 export function makeFallbackBodyScan(): BodyScanApiResponse {
   return {
     success: true,

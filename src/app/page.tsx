@@ -253,6 +253,8 @@ export default function HomePage() {
   const [apiSuccess, setApiSuccess] = useState<ApiSuccess | null>(null);
   const inFlightRef = useRef(false);
   const stepTryOnRef = useRef<HTMLDivElement>(null);
+  const portraitScanContainerRef = useRef<HTMLDivElement>(null);
+  const portraitScanImageRef = useRef<HTMLImageElement>(null);
   const [bodyScanResult, setBodyScanResult] = useState<BodyScanApiResponse | null>(null);
   const [bodyScanLoading, setBodyScanLoading] = useState(false);
 
@@ -265,6 +267,14 @@ export default function HomePage() {
     if (!garmentFile) return null;
     return URL.createObjectURL(garmentFile);
   }, [garmentFile]);
+
+  const garmentDescriptionForPrompt = useMemo(() => {
+    if (selectedLookId && presetLooks.length > 0) {
+      const look = presetLooks.find((l) => l.id === selectedLookId);
+      if (look?.title) return look.title;
+    }
+    return "Custom uploaded garment (Image B)";
+  }, [selectedLookId, presetLooks]);
 
   useEffect(() => {
     return () => {
@@ -402,6 +412,7 @@ export default function HomePage() {
       formData.append("targetImage", personFile);
       formData.append("garmentImage", garmentFile);
       formData.append("requestId", requestId);
+      formData.append("garmentDescription", garmentDescriptionForPrompt);
 
       const res = await fetch(SEEDREAM_ENDPOINT, {
         method: "POST",
@@ -608,6 +619,7 @@ export default function HomePage() {
                   {personPreview && (
                     <div className="flex w-full max-w-md flex-col items-center gap-2">
                       <div
+                        ref={portraitScanContainerRef}
                         className={`relative mx-auto flex w-full max-w-sm items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black ${
                           isSubmitting
                             ? "min-h-[min(70vh,40rem)]"
@@ -616,12 +628,15 @@ export default function HomePage() {
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
+                          ref={portraitScanImageRef}
                           src={personPreview}
                           alt=""
                           className="relative z-0 max-h-full max-w-full object-contain"
                         />
                         <BodyScanOverlay
                           active={isSubmitting}
+                          containerRef={portraitScanContainerRef}
+                          imageRef={portraitScanImageRef}
                           keypoints={bodyScanResult?.keypoints ?? FALLBACK_KEYPOINTS}
                           measurementValues={bodyScanResult?.measurementValues ?? FALLBACK_MEASUREMENTS}
                         />

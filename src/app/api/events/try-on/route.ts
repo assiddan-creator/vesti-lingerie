@@ -30,16 +30,25 @@ export async function POST(req: NextRequest) {
       if (Number.isFinite(n)) matchConfidence = n;
     }
 
-    const event = await db.tryOnEvent.create({
-      data: {
-        productId: productId ?? null,
-        userFitPreference,
-        originalUserImageUrl: originalUserImageUrl ?? null,
-        matchConfidence: matchConfidence ?? null,
-      },
-    });
+    try {
+      const event = await db.tryOnEvent.create({
+        data: {
+          productId: productId ?? null,
+          userFitPreference,
+          originalUserImageUrl: originalUserImageUrl ?? null,
+          matchConfidence: matchConfidence ?? null,
+        },
+      });
 
-    return NextResponse.json(event, { status: 201 });
+      return NextResponse.json({ success: true, ...event }, { status: 201 });
+    } catch (dbErr) {
+      // eslint-disable-next-line no-console
+      console.error("[try-on event] DB insert failed", dbErr);
+      return NextResponse.json(
+        { success: true, warning: "DB log failed" },
+        { status: 200 },
+      );
+    }
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

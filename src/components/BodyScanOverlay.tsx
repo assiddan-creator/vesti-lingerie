@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState, type RefObject } from "react";
 import { motion } from "framer-motion";
-import type { BodyKeypoints } from "../lib/body-scan";
+import { mapNormalizedToContainBox, type BodyKeypoints } from "../lib/body-scan";
 
 const LABELS = ["SHOULDERS", "BUST", "WAIST", "HIPS"] as const;
 
@@ -16,6 +16,10 @@ const TICK_MS = 90;
 type BodyScanOverlayProps = {
   active: boolean;
   className?: string;
+  /** Wrapper that contains the portrait `<img>` (same box as `object-contain` sizing). */
+  containerRef: RefObject<HTMLDivElement | null>;
+  /** The portrait image element (must use `object-contain`). */
+  imageRef: RefObject<HTMLImageElement | null>;
   /** Normalized keypoints from vision API (0–1). */
   keypoints: BodyKeypoints;
   /** Final display values for each row (e.g. cm or "—"). */
@@ -62,11 +66,19 @@ function lineForRow(
 export function BodyScanOverlay({
   active,
   className = "",
+  containerRef,
+  imageRef,
   keypoints,
   measurementValues,
 }: BodyScanOverlayProps) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [noiseTick, setNoiseTick] = useState(0);
+  const [containDims, setContainDims] = useState<{
+    cw: number;
+    ch: number;
+    nw: number;
+    nh: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!active) return;
@@ -80,26 +92,73 @@ export function BodyScanOverlay({
     return () => window.clearInterval(id);
   }, [active]);
 
+  useLayoutEffect(() => {
+    if (!active) return;
+    const box = containerRef.current;
+    const img = imageRef.current;
+    if (!box || !img) return;
+
+    const measure = () => {
+      const cw = box.clientWidth;
+      const ch = box.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (cw > 0 && ch > 0 && nw > 0 && nh > 0) {
+        setContainDims({ cw, ch, nw, nh });
+      }
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(box);
+    img.addEventListener("load", measure);
+    return () => {
+      ro.disconnect();
+      img.removeEventListener("load", measure);
+    };
+  }, [active, containerRef, imageRef]);
+
   const layout = useMemo(() => {
     const kp = keypoints;
-    const midSx = ((kp.leftShoulder.x + kp.rightShoulder.x) / 2) * 100;
-    const midSy = ((kp.leftShoulder.y + kp.rightShoulder.y) / 2) * 100;
-    const shoulderLabelY = Math.max(5, midSy - 5);
+    const toPct = (nx: number, ny: number) => {
+      if (!containDims) {
+        return { x: nx * 100, y: ny * 100 };
+      }
+      const { xPct, yPct } = mapNormalizedToContainBox(
+        nx,
+        ny,
+        containDims.cw,
+        containDims.ch,
+        containDims.nw,
+        containDims.nh,
+      );
+      return { x: xPct, y: yPct };
+    };
+
+    const midS = toPct(
+      (kp.leftShoulder.x + kp.rightShoulder.x) / 2,
+      (kp.leftShoulder.y + kp.rightShoulder.y) / 2,
+    );
+    const shoulderLabelY = Math.max(5, midS.y - 5);
 
     const shoulderDots = [
-      { x: kp.leftShoulder.x * 100, y: kp.leftShoulder.y * 100 },
-      { x: kp.rightShoulder.x * 100, y: kp.rightShoulder.y * 100 },
+      toPct(kp.leftShoulder.x, kp.leftShoulder.y),
+      toPct(kp.rightShoulder.x, kp.rightShoulder.y),
     ];
 
+    const bust = toPct(kp.bust.x, kp.bust.y);
+    const waist = toPct(kp.waist.x, kp.waist.y);
+    const hips = toPct(kp.hips.x, kp.hips.y);
+
     const labelSlots = [
-      { x: midSx, y: shoulderLabelY, rowIdx: 0 as const },
-      { x: kp.bust.x * 100, y: kp.bust.y * 100, rowIdx: 1 as const },
-      { x: kp.waist.x * 100, y: kp.waist.y * 100, rowIdx: 2 as const },
-      { x: kp.hips.x * 100, y: kp.hips.y * 100, rowIdx: 3 as const },
+      { x: midS.x, y: shoulderLabelY, rowIdx: 0 as const },
+      { x: bust.x, y: bust.y, rowIdx: 1 as const },
+      { x: waist.x, y: waist.y, rowIdx: 2 as const },
+      { x: hips.x, y: hips.y, rowIdx: 3 as const },
     ];
 
     return { shoulderDots, labelSlots };
-  }, [keypoints]);
+  }, [keypoints, containDims]);
 
   if (!active) return null;
 
