@@ -80,24 +80,24 @@ function extractUrlFromFirstItem(firstItem: unknown): string | null {
 }
 
 function buildSeedreamPrompt(refinePrompt: string | null) {
-  // Seedream-friendly natural-language prompt, keeping the exact same intent as the app's
-  // clothes-swap prompt used for other models.
+  // Natural language for Seedream: two-image virtual try-on with strict feminine fashion output.
   const basePrompt = [
-    "Photorealistic virtual try-on edit using two reference images.",
-    "Image A: the target person photo.",
-    "Image B: the garment reference photo.",
+    "You are given two reference images. Image A is the target person photograph. Image B is the lingerie or garment reference (flat lay, product shot, or worn reference).",
     "",
-    "Edit Image A so the person is wearing the clothing from Image B.",
-    "Transfer ONLY the clothing. Do not change the person’s identity.",
+    "Transform the person's clothing to the specified lingerie or garment from Image B while maintaining the user's original face, identity, and exact pose from Image A.",
+    "Transfer only the clothing appearance from Image B onto the person in Image A. Do not replace or alter the person's identity.",
     "",
-    "Preserve exactly: face/identity, skin texture, age, expression; hair and hairline; pose; body proportions; full-body framing; background; lighting; shadows; camera angle; and overall scene realism.",
-    "Keep the full body visible and do not crop the subject. Preserve the original framing from Image A.",
+    "CRITICAL — feminine anatomy and quality:",
+    "The subject must have flawless, anatomically correct, highly realistic female proportions.",
+    "Ensure the legs, arms, hips, bust, and full body structure remain feminine, elegant, and perfectly natural — no masculine facial or body features, no broadening of the jaw or shoulders beyond what appears in Image A, and no distortion of feminine silhouette.",
+    "The skin should be smooth and photorealistic, matching the lighting of a high-end luxury fashion shoot.",
+    "Seamlessly blend the new garment onto the user's body without any artificial edges, harsh cut lines, or masculine distortions.",
+    "Avoid warped limbs, bent or uneven legs, duplicated joints, or anatomically impossible poses. Hands, feet, and proportions must remain natural and consistent with Image A.",
     "",
-    "Preserve garment details accurately: color, material, texture, pattern/print, fit, length, seams, collar/neckline, cuffs, sleeves, and any logos/graphics.",
-    "Maintain natural drape and folds consistent with the pose and lighting.",
-    "Avoid anatomy distortions and warping (hands, arms, shoulders, neck).",
+    "Preserve from Image A: exact pose, framing, background, camera angle, depth of field, shadows, and overall scene realism. Keep the full subject visible; do not crop unexpectedly.",
+    "From Image B, preserve garment details: color, material, texture, pattern, cut, neckline, straps, lace or trim, and fit — with natural drape and folds for the pose and lighting.",
     "",
-    "Output one high-quality edited image.",
+    "Output one single high-quality photorealistic edited image.",
   ].join("\n");
 
   if (refinePrompt && refinePrompt.trim().length > 0) {
