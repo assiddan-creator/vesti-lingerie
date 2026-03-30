@@ -174,58 +174,54 @@ export function BodyScanOverlay({
     >
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
-          <pattern id="body-scan-grid" width="3.5" height="3.5" patternUnits="userSpaceOnUse">
-            <path d="M 3.5 0 L 0 0 0 3.5" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.12" />
-          </pattern>
-          <linearGradient id="body-scan-sweep" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="scan-beam" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#FF2800" stopOpacity="0" />
-            <stop offset="48%" stopColor="#FF2800" stopOpacity="0.5" />
-            <stop offset="52%" stopColor="#FF2800" stopOpacity="0.5" />
+            <stop offset="50%" stopColor="#FF2800" stopOpacity="0.22" />
             <stop offset="100%" stopColor="#FF2800" stopOpacity="0" />
           </linearGradient>
         </defs>
-        <rect width="100" height="100" fill="url(#body-scan-grid)" opacity={0.9} />
         <motion.rect
           x="0"
           width="100"
-          height="14"
-          fill="url(#body-scan-sweep)"
-          initial={{ y: -14 }}
-          animate={{ y: 114 }}
-          transition={{ duration: 2.6, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.rect
-          x="0"
-          width="100"
-          height="10"
-          fill="url(#body-scan-sweep)"
-          initial={{ y: -10 }}
-          animate={{ y: 110 }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: "linear", delay: 0.9 }}
+          height="5"
+          fill="url(#scan-beam)"
+          initial={{ y: -5 }}
+          animate={{ y: 105 }}
+          transition={{ duration: 3.8, repeat: Infinity, ease: "linear" }}
         />
       </svg>
 
       {layout.shoulderDots.map((d, i) => (
         <div
           key={`sd-${i}`}
-          className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-[#FF2800] shadow-[0_0_12px_#FF2800]"
-          style={{ left: `${d.x}%`, top: `${d.y}%` }}
+          className="absolute h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FF2800]"
+          style={{ left: `${d.x}%`, top: `${d.y}%`, boxShadow: "0 0 4px rgba(255,40,0,0.9)" }}
         />
       ))}
 
       {labelSlotsRendered.map((slot, i) => (
-        <div
+        <motion.div
           key={`lbl-${i}`}
-          className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+          className="absolute -translate-x-1/2 -translate-y-1/2"
           style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: i * 0.25 }}
         >
-          <div className="mb-1 h-2 w-2 rounded-full border border-white bg-[#FF2800] shadow-[0_0_12px_#FF2800]" />
-          <div className="min-w-[10rem] max-w-[12rem] rounded-md border border-white/30 bg-black/75 px-2 py-1.5 text-center shadow-[0_0_18px_rgba(255,40,0,0.25)] backdrop-blur-[2px]">
-            <p className="text-[10px] font-bold leading-tight tracking-wide text-white tabular-nums sm:text-[11px]">
-              {slot.text}
-            </p>
-          </div>
-        </div>
+          <p
+            style={{
+              fontFamily: "sans-serif",
+              fontSize: "9px",
+              fontWeight: 600,
+              letterSpacing: "0.15em",
+              color: "#ffffff",
+              whiteSpace: "nowrap",
+              textShadow: "0 1px 6px rgba(0,0,0,1), 0 0 10px rgba(255,40,0,0.5)",
+            }}
+          >
+            {slot.text}
+          </p>
+        </motion.div>
       ))}
     </div>
   );

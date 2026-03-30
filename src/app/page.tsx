@@ -11,12 +11,92 @@ import {
 } from "../lib/body-scan";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
-const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
-const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpeg";
-
 /** Premium shield: black fill, white border & text, always-visible #FF2800 glow */
 const shieldButtonClass =
   "rounded-2xl border-2 border-white bg-black font-semibold text-white shadow-[0_0_28px_rgba(255,40,0,0.7),0_0_56px_rgba(255,40,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] transition-[box-shadow,filter] hover:shadow-[0_0_40px_rgba(255,40,0,0.85),0_0_72px_rgba(255,40,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800] disabled:cursor-not-allowed disabled:opacity-40";
+
+function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<
+    Array<{ title?: string; price?: string; link?: string; thumbnail?: string }>
+  >([]);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleShop() {
+    if (!resultUrl || loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/visual-search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: resultUrl }),
+      });
+      const data = (await res.json()) as {
+        shoppingResults?: Array<{ title?: string; price?: string; link?: string; thumbnail?: string }>;
+        error?: string;
+      };
+      if (!res.ok || data.error) {
+        setError(data.error ?? "Search failed");
+      } else {
+        setResults(data.shoppingResults ?? []);
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (results.length > 0) {
+    return (
+      <div className="mt-8 w-full max-w-md">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Shop similar pieces</p>
+        <div className="grid grid-cols-3 gap-2">
+          {results.slice(0, 6).map((item, i) => (
+            <a
+              key={i}
+              href={item.link ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-2 transition-colors hover:border-[#FF2800]/50"
+            >
+              {item.thumbnail && (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.thumbnail}
+                    alt={item.title ?? ""}
+                    className="h-16 w-full rounded-lg object-cover"
+                  />
+                </>
+              )}
+              <p className="line-clamp-2 text-[9px] leading-tight text-white/80">{item.title}</p>
+              {item.price && <p className="text-[9px] font-semibold text-[#FF2800]">{item.price}</p>}
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 flex w-full max-w-md flex-col items-center gap-3">
+      <button
+        type="button"
+        onClick={() => void handleShop()}
+        disabled={loading}
+        className={`w-full px-8 py-4 text-sm font-bold uppercase tracking-[0.22em] ${shieldButtonClass}`}
+      >
+        {loading ? "Finding similar pieces..." : "Shop this look"}
+      </button>
+      {error && <p className="text-xs text-[rgba(255,255,255,0.5)]">Search unavailable</p>}
+    </div>
+  );
+}
+
+const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
+const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpeg";
 
 /** Frontend always uses Seedream 5 Lite (`bytedance/seedream-5-lite` on the server). */
 const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
@@ -776,12 +856,7 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  className={`mt-8 w-full max-w-md px-8 py-4 text-sm font-bold uppercase tracking-[0.22em] ${shieldButtonClass}`}
-                >
-                  Buy now
-                </button>
+                <ShopTheLookButton resultUrl={resultUrl} />
 
                 <button
                   type="button"
