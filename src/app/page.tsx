@@ -87,7 +87,8 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
                   <img
                     src={item.thumbnail}
                     alt={item.title ?? ""}
-                    className="h-32 w-full rounded-lg object-cover object-top"
+                    className="w-full rounded-lg object-cover object-center"
+                    style={{ height: "144px", aspectRatio: "3/4" }}
                   />
                 </>
               )}

@@ -90,9 +90,17 @@ async function generateShoppingQueryFromVision(visionSummary: Record<string, unk
       messages: [
         {
           role: "user",
-          content: `You are a shopping search expert. Below is structured output from Google Cloud Vision (labels, localized objects, and web detection) for a fashion/clothing photo.
+          content: `You are a shopping search expert for a luxury lingerie boutique. Below is structured output from Google Cloud Vision for a virtual try-on result image.
 
-Your task: output EXACTLY ONE line containing a 3–6 word English search query optimized for Google Shopping. This is a luxury lingerie virtual try-on app — prioritize lingerie, bra, underwear, bodysuit, or intimate apparel terms based on what you see. Focus on garment type, color, material, and style. No brand names. No quotes, no punctuation at the end, no explanation.
+IMPORTANT: This is a lingerie try-on app. Always output a lingerie-focused search query.
+
+Your task: output EXACTLY ONE line containing a 3-6 word English search query for Google Shopping focused on LINGERIE or INTIMATE APPAREL.
+
+Look at the Vision data for color (red, black, white, pink, nude), style (lace, satin, silk, floral, strappy, bralette, bodysuit, corset), and use these to build a specific lingerie query.
+
+Examples: black lace bralette set / red satin lingerie set / floral lace bra set
+
+No brand names. No quotes. No punctuation at end. One line only.
 
 Vision data (JSON):
 ${JSON.stringify(visionSummary, null, 2)}`,
