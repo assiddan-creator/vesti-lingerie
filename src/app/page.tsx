@@ -27,10 +27,27 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
     setLoading(true);
     setError(null);
     try {
+      let imagePayload = resultUrl;
+      if (resultUrl && !resultUrl.startsWith("data:")) {
+        try {
+          const imgRes = await fetch(resultUrl);
+          const blob = await imgRes.blob();
+          imagePayload = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch {
+          setError("Could not load image");
+          setLoading(false);
+          return;
+        }
+      }
       const res = await fetch("/api/visual-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: resultUrl }),
+        body: JSON.stringify({ imageBase64: imagePayload }),
       });
       const data = (await res.json()) as {
         shoppingResults?: Array<{ title?: string; price?: string; link?: string; thumbnail?: string }>;
