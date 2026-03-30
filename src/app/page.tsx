@@ -6,8 +6,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { PresetLook } from "../lib/preset-looks";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
-const VELVET_BG = "/Black_velvet_background_202603301114.jpg";
-const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpg";
+const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
+const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpeg";
 
 /** Premium shield: black fill, white border & text, always-visible #FF2800 glow */
 const shieldButtonClass =
