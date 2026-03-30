@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
       engine: "google_shopping",
       q: generatedQuery,
       api_key: serpKey,
-      num: "6",
+      num: "12",
     });
 
     const serpRes = await fetch(`https://serpapi.com/search?${params.toString()}`);
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const shoppingResults = serpData.shopping_results?.slice(0, 6) || [];
+    const shoppingResults = serpData.shopping_results?.slice(0, 12) || [];
 
     return NextResponse.json({ generatedQuery, shoppingResults });
   } catch (e) {

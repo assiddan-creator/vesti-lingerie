@@ -21,6 +21,7 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
     Array<{ title?: string; price?: string; link?: string; thumbnail?: string }>
   >([]);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState<string>("");
 
   async function handleShop() {
     if (!resultUrl || loading) return;
@@ -51,8 +52,10 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
       });
       const data = (await res.json()) as {
         shoppingResults?: Array<{ title?: string; price?: string; link?: string; thumbnail?: string }>;
+        generatedQuery?: string;
         error?: string;
       };
+      if (data.generatedQuery) setQuery(data.generatedQuery);
       if (!res.ok || data.error) {
         setError(data.error ?? "Search failed");
       } else {
@@ -67,16 +70,16 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
 
   if (results.length > 0) {
     return (
-      <div className="mt-8 w-full max-w-md">
-        <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Shop similar pieces</p>
-        <div className="grid grid-cols-3 gap-2">
-          {results.slice(0, 6).map((item, i) => (
+      <div className="mt-8 w-full max-w-2xl">
+        <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Shop similar pieces</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {results.slice(0, 12).map((item, i) => (
             <a
               key={i}
               href={item.link ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center gap-1 rounded-xl border border-white/10 bg-black/60 p-2 transition-colors hover:border-[#FF2800]/50"
+              className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-3 transition-colors hover:border-[#FF2800]/60"
             >
               {item.thumbnail && (
                 <>
@@ -84,14 +87,32 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
                   <img
                     src={item.thumbnail}
                     alt={item.title ?? ""}
-                    className="h-20 w-full rounded-lg object-cover object-top"
+                    className="h-32 w-full rounded-lg object-cover object-top"
                   />
                 </>
               )}
-              <p className="line-clamp-2 text-[9px] leading-tight text-white/80">{item.title}</p>
-              {item.price && <p className="text-[9px] font-semibold text-[#FF2800]">{item.price}</p>}
+              <p className="line-clamp-2 text-[10px] leading-snug text-white/80">{item.title}</p>
+              {item.price && <p className="text-[10px] font-bold text-[#FF2800]">{item.price}</p>}
             </a>
           ))}
+        </div>
+        <div className="mt-6 flex w-full gap-3">
+          <a
+            href={`https://www.asos.com/search/?q=${encodeURIComponent(query)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${shieldButtonClass}`}
+          >
+            Search on Asos
+          </a>
+          <a
+            href={`https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=shop`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${shieldButtonClass}`}
+          >
+            Search on Google
+          </a>
         </div>
       </div>
     );
