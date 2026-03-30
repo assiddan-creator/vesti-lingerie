@@ -487,40 +487,41 @@ export default function HomePage() {
       <div className="relative z-10 flex w-full flex-col">
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
         <header className="mb-10 w-full">
-          <div className="relative w-full overflow-hidden" style={{ height: "220px" }}>
+          <div className="relative w-full overflow-hidden rounded-b-2xl" style={{ height: "200px" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/Luxury_fashion_flat_202603252000.jpeg"
-              alt="Vesti Lingerie"
-              className="absolute inset-0 h-full w-full object-cover object-center"
-              style={{ objectPosition: "center 35%" }}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: "center 40%" }}
             />
             <div
               className="absolute inset-0"
               style={{
-                background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%)",
+                background: "linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.65) 100%)",
               }}
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: "6px" }}>
               <h1
                 style={{
-                  fontFamily: "Georgia, serif",
-                  fontSize: "48px",
-                  fontWeight: "700",
-                  letterSpacing: "18px",
-                  color: "#ffffff",
+                  fontFamily: "Georgia,serif",
+                  fontSize: "44px",
+                  fontWeight: 700,
+                  letterSpacing: "16px",
+                  color: "#fff",
                   margin: 0,
                   lineHeight: 1,
+                  textShadow: "0 2px 20px rgba(0,0,0,0.8)",
                 }}
               >
                 VESTI
               </h1>
-              <div style={{ width: "100px", height: "1px", background: "#FF2800", opacity: 0.9 }} />
+              <div style={{ width: "90px", height: "1px", background: "#FF2800" }} />
               <p
                 style={{
                   fontFamily: "sans-serif",
-                  fontSize: "11px",
-                  fontWeight: "300",
+                  fontSize: "10px",
+                  fontWeight: 300,
                   letterSpacing: "8px",
                   color: "#FF2800",
                   margin: 0,
@@ -530,7 +531,10 @@ export default function HomePage() {
               </p>
             </div>
           </div>
-          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
+          <p
+            className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-center"
+            style={{ color: "rgba(255,255,255,0.7)" }}
+          >
             Private try-on. One portrait. Your set. Instant confidence.
           </p>
         </header>
