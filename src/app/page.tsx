@@ -13,6 +13,7 @@ import {
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
+const HERO_MAIN_IMAGE = "/Luxury_fashion_flat_202603252000.jpeg";
 const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpeg";
 
 /** Premium shield: black fill, white border & text, always-visible #FF2800 glow */
@@ -485,7 +486,36 @@ export default function HomePage() {
       />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-black/40" aria-hidden />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
+      <div className="relative z-10 flex w-full flex-col">
+        <section
+          className="relative h-[420px] w-full shrink-0 overflow-hidden text-center"
+          aria-label="Vesti Lingerie"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={HERO_MAIN_IMAGE}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent"
+            aria-hidden
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
+            <span className="font-serif text-[64px] font-normal text-white" style={{ letterSpacing: "20px" }}>
+              VESTI
+            </span>
+            <div className="my-4 h-px w-[120px] shrink-0 bg-[#FF2800]" aria-hidden />
+            <span
+              className="font-sans text-[13px] uppercase text-[#FF2800]"
+              style={{ letterSpacing: "10px" }}
+            >
+              LINGERIE
+            </span>
+          </div>
+        </section>
+
+        <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
         <header className="mb-10 flex w-full flex-col items-center text-center">
           <div className="mx-auto flex justify-center">
             <Image
@@ -580,12 +610,15 @@ export default function HomePage() {
                               : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
                           }
                         >
-                          <div className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl bg-black">
+                          <div
+                            className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl bg-black bg-cover bg-center"
+                            style={{ backgroundImage: `url('${VELVET_BG}')` }}
+                          >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={look.imageSrc}
                               alt={look.title}
-                              className="h-full w-full object-contain"
+                              className="relative z-10 h-full w-full object-contain mix-blend-multiply"
                             />
                           </div>
                           <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-white">{look.title}</p>
@@ -749,6 +782,7 @@ export default function HomePage() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
         </div>
       </div>
     </div>
