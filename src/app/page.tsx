@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Playfair_Display } from "next/font/google";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PresetLook } from "../lib/preset-looks";
+
+const brandSerif = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
 
 /** Frontend always uses Seedream 5 Lite (`bytedance/seedream-5-lite` on the server). */
 const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
@@ -117,6 +123,81 @@ function UploadPortraitCard({
   );
 }
 
+function CustomGarmentUpload({
+  preview,
+  onFileChange,
+  onClear,
+}: {
+  preview: string | null;
+  onFileChange: (file: File) => void;
+  onClear: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="flex w-full max-w-md flex-col items-center gap-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#FF2800]">Or upload your own</p>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="group flex min-h-[8.5rem] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/25 bg-black/40 px-4 py-6 text-center transition-[border-color,box-shadow] hover:border-[#FF2800]/80 hover:shadow-[0_0_28px_rgba(255,40,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800]"
+      >
+        {preview ? (
+          <div className="relative h-28 w-full max-w-[200px] overflow-hidden rounded-xl border border-white/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={preview} alt="Custom lingerie reference" className="h-full w-full object-cover" />
+          </div>
+        ) : (
+          <>
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white bg-white">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-[#FF2800]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                />
+              </svg>
+            </div>
+            <span className="text-sm font-semibold tracking-wide text-white">Upload custom lingerie</span>
+            <span className="max-w-[240px] text-xs leading-relaxed text-[rgba(255,255,255,0.55)]">
+              Flat lay or product photo. PNG or JPG.
+            </span>
+          </>
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFileChange(file);
+        }}
+      />
+      {preview && (
+        <button
+          type="button"
+          onClick={() => {
+            onClear();
+            if (inputRef.current) inputRef.current.value = "";
+          }}
+          className="text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white"
+        >
+          Clear custom upload
+        </button>
+      )}
+    </div>
+  );
+}
+
 function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   const steps = [
     { n: 1 as const, label: "Your photo" },
@@ -156,6 +237,7 @@ export default function HomePage() {
   const [apiError, setApiError] = useState<ApiError | null>(null);
   const [apiSuccess, setApiSuccess] = useState<ApiSuccess | null>(null);
   const inFlightRef = useRef(false);
+  const stepTryOnRef = useRef<HTMLDivElement>(null);
 
   const personPreview = useMemo(() => {
     if (!personFile) return null;
@@ -202,15 +284,40 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (currentStep !== 3) return;
+    const t = window.setTimeout(() => {
+      stepTryOnRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+    }, 100);
+    return () => window.clearTimeout(t);
+  }, [currentStep]);
+
+  function handleCustomGarmentFile(file: File) {
+    setGarmentFile(file);
+    setSelectedLookId(null);
+    setCurrentStep(3);
+  }
+
+  function clearCustomGarment() {
+    setGarmentFile(null);
+    setSelectedLookId(null);
+  }
+
   async function selectPresetLook(look: PresetLook) {
     setSelectedLookId(look.id);
     try {
       const res = await fetch(look.imageSrc);
       const blob = await res.blob();
-      const file = new File([blob], `${look.id}.svg`, {
-        type: blob.type || "image/svg+xml",
+      const ext = look.imageSrc.match(/\.[^./\\]+$/)?.[0] ?? ".jpg";
+      const file = new File([blob], `${look.id}${ext}`, {
+        type: blob.type || "image/jpeg",
       });
       setGarmentFile(file);
+      setCurrentStep(3);
     } catch {
       setSelectedLookId(null);
       setGarmentFile(null);
@@ -297,9 +404,11 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#000000] text-white">
       <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center px-4 py-10 sm:px-6 sm:py-14">
         <header className="mb-10 flex w-full flex-col items-center text-center">
-          <h1 className="relative inline-block text-3xl font-extralight tracking-[0.35em] text-white sm:text-4xl">
+          <h1
+            className={`${brandSerif.className} relative mx-auto inline-block max-w-[20ch] text-center text-[2rem] font-normal leading-tight tracking-[0.08em] text-white sm:text-5xl sm:tracking-[0.1em]`}
+          >
             Vesti Lingerie
-            <span className="absolute -bottom-2 left-0 right-0 h-px bg-[#FF2800]" aria-hidden />
+            <span className="absolute -bottom-3 left-0 right-0 h-px bg-[#FF2800]" aria-hidden />
           </h1>
           <p className="mt-6 max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.6)]">
             Private try-on. One portrait. Your set. Instant confidence.
@@ -345,8 +454,23 @@ export default function HomePage() {
                 className="mx-auto flex w-full flex-col items-center text-center"
               >
                 <p className="mb-6 text-sm text-[rgba(255,255,255,0.6)]">
-                  Select a Victoria&apos;s Secret–style set. These presets reference our curated lingerie gallery.
+                  Upload your own reference, or choose a Victoria&apos;s Secret–style preset from our gallery.
                 </p>
+
+                <CustomGarmentUpload
+                  preview={selectedLookId === null ? garmentPreview : null}
+                  onFileChange={handleCustomGarmentFile}
+                  onClear={clearCustomGarment}
+                />
+
+                <div className="my-8 flex w-full max-w-md items-center gap-4">
+                  <div className="h-px flex-1 bg-white/15" />
+                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.45)]">
+                    Presets
+                  </span>
+                  <div className="h-px flex-1 bg-white/15" />
+                </div>
+
                 {presetLooks.length === 0 ? (
                   <p className="text-sm text-[rgba(255,255,255,0.6)]">Loading sets…</p>
                 ) : (
@@ -374,35 +498,27 @@ export default function HomePage() {
                     })}
                   </div>
                 )}
-                <div className="mt-10 flex w-full max-w-md flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                <div className="mt-10 flex w-full max-w-md justify-center">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(1)}
-                    className="w-full rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-[rgba(255,255,255,0.85)] hover:border-white sm:w-auto"
+                    className="rounded-xl border border-white/20 px-8 py-3 text-sm font-semibold text-[rgba(255,255,255,0.85)] hover:border-white"
                   >
                     Back
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!garmentFile}
-                    onClick={() => setCurrentStep(3)}
-                    className="w-full rounded-xl bg-[#FF2800] px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_0_28px_rgba(255,40,0,0.35)] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                  >
-                    Continue
                   </button>
                 </div>
               </motion.div>
             )}
 
             {currentStep === 3 && (
-              <motion.div
-                key="s3"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="mx-auto flex w-full flex-col items-center text-center"
-              >
+              <div key="s3" ref={stepTryOnRef} className="scroll-mt-28">
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                  className="mx-auto flex w-full flex-col items-center text-center"
+                >
                 <div className="mb-8 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
                   {personPreview && (
                     <div className="flex flex-col items-center gap-2">
@@ -457,7 +573,8 @@ export default function HomePage() {
                 >
                   Back
                 </button>
-              </motion.div>
+                </motion.div>
+              </div>
             )}
 
             {currentStep === 4 && resultUrl && (
