@@ -67,10 +67,12 @@ function UploadPortraitCard({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className={`group relative flex min-h-52 w-full max-w-sm flex-col items-center justify-center gap-3 px-4 ${shieldButtonClass}`}
+        className={`group relative flex w-full max-w-sm flex-col items-center justify-center gap-3 px-4 ${shieldButtonClass} ${
+          preview ? "min-h-[min(72vh,40rem)] sm:min-h-[min(76vh,44rem)]" : "min-h-52"
+        }`}
       >
         {preview ? (
-          <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-black/60 p-3">
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-black p-2 sm:p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="Your portrait" className="max-h-full max-w-full object-contain" />
           </div>
@@ -146,9 +148,13 @@ function CustomGarmentUpload({
         className={`group flex min-h-[8.5rem] w-full flex-col items-center justify-center gap-2 px-4 py-6 text-center ${shieldButtonClass}`}
       >
         {preview ? (
-          <div className="relative h-28 w-full max-w-[200px] overflow-hidden rounded-xl border border-white/10">
+          <div className="relative flex min-h-44 w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black sm:min-h-52">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="Custom lingerie reference" className="h-full w-full object-cover" />
+            <img
+              src={preview}
+              alt="Custom lingerie reference"
+              className="max-h-full max-w-full object-contain"
+            />
           </div>
         ) : (
           <>
@@ -502,9 +508,13 @@ export default function HomePage() {
                               : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
                           }
                         >
-                          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-black">
+                          <div className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl bg-black">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={look.imageSrc} alt={look.title} className="h-full w-full object-cover" />
+                            <img
+                              src={look.imageSrc}
+                              alt={look.title}
+                              className="h-full w-full object-contain"
+                            />
                           </div>
                           <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-white">{look.title}</p>
                         </button>
@@ -535,17 +545,19 @@ export default function HomePage() {
                 >
                 <div className="mb-8 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
                   {personPreview && (
-                    <div className="flex flex-col items-center gap-2">
+                    <div className="flex w-full max-w-md flex-col items-center gap-2">
                       <div
-                        className={`relative overflow-hidden rounded-xl border border-white/15 bg-black/40 ${
-                          isSubmitting ? "h-64 w-48 sm:h-80 sm:w-56" : "h-28 w-28 sm:h-32 sm:w-32"
+                        className={`relative mx-auto flex w-full max-w-sm items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black ${
+                          isSubmitting
+                            ? "min-h-[min(70vh,40rem)]"
+                            : "min-h-[min(52vh,30rem)] sm:min-h-[min(56vh,34rem)]"
                         }`}
                       >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={personPreview}
                           alt=""
-                          className="h-full w-full object-cover"
+                          className="relative z-0 max-h-full max-w-full object-contain"
                         />
                         <BodyScanOverlay active={isSubmitting} />
                       </div>
@@ -553,13 +565,15 @@ export default function HomePage() {
                     </div>
                   )}
                   {garmentPreview && !isSubmitting && (
-                    <div className="flex flex-col items-center gap-2">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={garmentPreview}
-                        alt=""
-                        className="h-28 w-28 rounded-xl border border-white/15 object-cover sm:h-32 sm:w-32"
-                      />
+                    <div className="flex w-full max-w-xs flex-col items-center gap-2">
+                      <div className="relative flex min-h-[min(36vh,18rem)] w-full max-w-[15rem] items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black sm:max-w-[17rem]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={garmentPreview}
+                          alt=""
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      </div>
                       <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">Set</span>
                     </div>
                   )}
@@ -606,12 +620,14 @@ export default function HomePage() {
                 transition={{ duration: 0.3 }}
                 className="mx-auto flex w-full flex-col items-center text-center"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={resultUrl}
-                  alt="Your Vesti Lingerie try-on result"
-                  className="max-h-[min(70vh,640px)] w-auto max-w-full rounded-2xl border border-white/10 object-contain shadow-[0_0_60px_rgba(255,40,0,0.15)]"
-                />
+                <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/10 bg-black p-2 shadow-[0_0_60px_rgba(255,40,0,0.15)] sm:p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={resultUrl}
+                    alt="Your Vesti Lingerie try-on result"
+                    className="mx-auto max-h-[min(78vh,720px)] w-full object-contain"
+                  />
+                </div>
 
                 <div className="mt-10 w-full max-w-md rounded-2xl border border-white/12 bg-black/50 px-6 py-6 backdrop-blur-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Fit insight</p>

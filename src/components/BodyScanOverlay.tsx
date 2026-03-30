@@ -89,7 +89,7 @@ export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 overflow-hidden rounded-xl ${className}`}
+      className={`pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl ${className}`}
       aria-hidden
     >
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
