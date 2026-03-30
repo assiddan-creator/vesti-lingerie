@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PresetLook } from "../lib/preset-looks";
 import type { BodyScanApiResponse } from "../lib/body-scan";
@@ -488,26 +487,27 @@ export default function HomePage() {
 
       <div className="relative z-10 flex w-full flex-col">
         <section
-          className="relative h-[420px] w-full shrink-0 overflow-hidden text-center"
+          className="relative h-[180px] w-full shrink-0 overflow-hidden text-center"
           aria-label="Vesti Lingerie"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={HERO_MAIN_IMAGE}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full"
+            style={{ objectFit: "cover", objectPosition: "center 30%" }}
           />
           <div
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent"
             aria-hidden
           />
           <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-            <span className="font-serif text-[64px] font-normal text-white" style={{ letterSpacing: "20px" }}>
+            <span className="font-serif text-[38px] font-normal text-white" style={{ letterSpacing: "16px" }}>
               VESTI
             </span>
-            <div className="my-4 h-px w-[120px] shrink-0 bg-[#FF2800]" aria-hidden />
+            <div className="my-2 h-px w-[120px] shrink-0 bg-[#FF2800]" aria-hidden />
             <span
-              className="font-sans text-[13px] uppercase text-[#FF2800]"
+              className="font-sans text-[10px] uppercase text-[#FF2800]"
               style={{ letterSpacing: "10px" }}
             >
               LINGERIE
@@ -517,17 +517,7 @@ export default function HomePage() {
 
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
         <header className="mb-10 flex w-full flex-col items-center text-center">
-          <div className="mx-auto flex justify-center">
-            <Image
-              src={BRAND_EMBLEM}
-              alt="Vesti Lingerie"
-              width={150}
-              height={150}
-              priority
-              className="h-[120px] w-[120px] object-contain drop-shadow-[0_4px_24px_rgba(255,40,0,0.55)] sm:h-[150px] sm:w-[150px]"
-            />
-          </div>
-          <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
+          <p className="mx-auto max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
             Private try-on. One portrait. Your set. Instant confidence.
           </p>
         </header>
@@ -611,14 +601,18 @@ export default function HomePage() {
                           }
                         >
                           <div
-                            className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl bg-black bg-cover bg-center"
-                            style={{ backgroundImage: `url('${VELVET_BG}')` }}
+                            className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl bg-black"
+                            style={{
+                              backgroundImage: "url(/Black_velvet_background_202603301114.jpeg)",
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                            }}
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={look.imageSrc}
                               alt={look.title}
-                              className="relative z-10 h-full w-full object-contain mix-blend-multiply"
+                              className="relative z-10 h-full w-full object-contain"
                             />
                           </div>
                           <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-white">{look.title}</p>
