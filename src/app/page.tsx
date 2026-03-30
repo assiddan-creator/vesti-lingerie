@@ -11,11 +11,18 @@ import {
 } from "../lib/body-scan";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
-/** Premium shield: black fill, white border & text, always-visible #FF2800 glow */
 const shieldButtonClass =
   "rounded-2xl border-2 border-white bg-black font-semibold text-white shadow-[0_0_28px_rgba(255,40,0,0.7),0_0_56px_rgba(255,40,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] transition-[box-shadow,filter] hover:shadow-[0_0_40px_rgba(255,40,0,0.85),0_0_72px_rgba(255,40,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800] disabled:cursor-not-allowed disabled:opacity-40";
 
-function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
+// ─── ShopTheLookButton ───────────────────────────────────────────────────────
+// מקבל גם את garmentFile כדי לשלוח את תמונת הבגד המקורית לגוגל ויז'ן
+function ShopTheLookButton({
+  resultUrl,
+  garmentFile,
+}: {
+  resultUrl: string | null;
+  garmentFile: File | null;
+}) {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<
     Array<{ title?: string; price?: string; link?: string; thumbnail?: string }>
@@ -23,28 +30,48 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState<string>("");
 
+  async function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function handleShop() {
-    if (!resultUrl || loading) return;
+    if (loading) return;
     setLoading(true);
     setError(null);
     try {
-      let imagePayload = resultUrl;
-      if (resultUrl && !resultUrl.startsWith("data:")) {
-        try {
-          const imgRes = await fetch(resultUrl);
-          const blob = await imgRes.blob();
-          imagePayload = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } catch {
-          setError("Could not load image");
-          setLoading(false);
-          return;
+      // שולחים את תמונת הבגד המקורית — לא את תמונת התוצאה
+      let imagePayload: string | null = null;
+
+      if (garmentFile) {
+        imagePayload = await fileToBase64(garmentFile);
+      } else if (resultUrl) {
+        // fallback — אם אין קובץ בגד, ננסה עם תמונת התוצאה
+        if (resultUrl.startsWith("data:")) {
+          imagePayload = resultUrl;
+        } else {
+          try {
+            const imgRes = await fetch(resultUrl);
+            const blob = await imgRes.blob();
+            imagePayload = await fileToBase64(new File([blob], "result.jpg", { type: "image/jpeg" }));
+          } catch {
+            setError("Could not load image");
+            setLoading(false);
+            return;
+          }
         }
       }
+
+      if (!imagePayload) {
+        setError("No image available");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch("/api/visual-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,7 +98,9 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
   if (results.length > 0) {
     return (
       <div className="mt-8 w-full max-w-2xl">
-        <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Shop similar pieces</p>
+        <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#FF2800]">
+          Shop similar pieces
+        </p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {results.slice(0, 12).map((item, i) => (
             <a
@@ -82,18 +111,18 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
               className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-3 transition-colors hover:border-[#FF2800]/60"
             >
               {item.thumbnail && (
-                <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title ?? ""}
-                    className="w-full rounded-lg object-cover object-center"
-                    style={{ height: "144px", aspectRatio: "3/4" }}
-                  />
-                </>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={item.thumbnail}
+                  alt={item.title ?? ""}
+                  className="w-full rounded-lg object-cover object-top"
+                  style={{ height: "160px" }}
+                />
               )}
               <p className="line-clamp-2 text-[10px] leading-snug text-white/80">{item.title}</p>
-              {item.price && <p className="text-[10px] font-bold text-[#FF2800]">{item.price}</p>}
+              {item.price && (
+                <p className="text-[10px] font-bold text-[#FF2800]">{item.price}</p>
+              )}
             </a>
           ))}
         </div>
@@ -129,17 +158,18 @@ function ShopTheLookButton({ resultUrl }: { resultUrl: string | null }) {
       >
         {loading ? "Finding similar pieces..." : "Shop this look"}
       </button>
-      {error && <p className="text-xs text-[rgba(255,255,255,0.5)]">Search unavailable</p>}
+      {error && (
+        <p className="text-xs text-[rgba(255,255,255,0.5)]">Search unavailable</p>
+      )}
     </div>
   );
 }
 
+// ─── Constants ───────────────────────────────────────────────────────────────
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
-const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpeg";
-
-/** Frontend always uses Seedream 5 Lite (`bytedance/seedream-5-lite` on the server). */
 const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
 
+// ─── Types ───────────────────────────────────────────────────────────────────
 type ApiSuccess = {
   success: true;
   message: string;
@@ -170,6 +200,7 @@ function createRequestId() {
   return `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+// ─── UploadPortraitCard ───────────────────────────────────────────────────────
 function UploadPortraitCard({
   preview,
   onFileChange,
@@ -252,6 +283,7 @@ function UploadPortraitCard({
   );
 }
 
+// ─── CustomGarmentUpload ──────────────────────────────────────────────────────
 function CustomGarmentUpload({
   preview,
   onFileChange,
@@ -274,11 +306,7 @@ function CustomGarmentUpload({
         {preview ? (
           <div className="relative flex min-h-44 w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black sm:min-h-52">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={preview}
-              alt="Custom lingerie reference"
-              className="max-h-full max-w-full object-contain"
-            />
+            <img src={preview} alt="Custom lingerie reference" className="max-h-full max-w-full object-contain" />
           </div>
         ) : (
           <>
@@ -331,6 +359,7 @@ function CustomGarmentUpload({
   );
 }
 
+// ─── StepIndicator ────────────────────────────────────────────────────────────
 function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   const steps = [
     { n: 1 as const, label: "Your photo" },
@@ -346,11 +375,10 @@ function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
           done || isActive
             ? "flex h-8 w-8 items-center justify-center rounded-full bg-[#FF2800] text-xs font-bold text-white"
             : "flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[#FF2800]";
-        const showCheck = done;
         return (
           <div key={n} className="flex flex-col items-center gap-2">
             <div className={circleClass}>
-              <span>{showCheck ? "✓" : n}</span>
+              <span>{done ? "✓" : n}</span>
             </div>
             <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-white">{label}</span>
           </div>
@@ -360,6 +388,7 @@ function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   );
 }
 
+// ─── HomePage ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const [personFile, setPersonFile] = useState<File | null>(null);
   const [garmentFile, setGarmentFile] = useState<File | null>(null);
@@ -424,19 +453,13 @@ export default function HomePage() {
       }
     }
     void load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
     if (currentStep !== 3) return;
     const t = window.setTimeout(() => {
-      stepTryOnRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "nearest",
-      });
+      stepTryOnRef.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
     }, 100);
     return () => window.clearTimeout(t);
   }, [currentStep]);
@@ -450,24 +473,16 @@ export default function HomePage() {
     let cancelled = false;
     setBodyScanLoading(true);
     setBodyScanResult(null);
-
     const fd = new FormData();
     fd.append("image", personFile);
-
     void (async () => {
       try {
-        const res = await fetch("/api/body-scan-from-image", {
-          method: "POST",
-          body: fd,
-        });
+        const res = await fetch("/api/body-scan-from-image", { method: "POST", body: fd });
         const data = (await res.json()) as BodyScanApiResponse | { success?: boolean; error?: unknown };
         if (cancelled) return;
         if (
-          res.ok &&
-          data &&
-          typeof data === "object" &&
-          "success" in data &&
-          data.success === true &&
+          res.ok && data && typeof data === "object" &&
+          "success" in data && data.success === true &&
           "keypoints" in data &&
           Array.isArray((data as BodyScanApiResponse).measurementValues)
         ) {
@@ -481,10 +496,7 @@ export default function HomePage() {
         if (!cancelled) setBodyScanLoading(false);
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [personFile]);
 
   function handleCustomGarmentFile(file: File) {
@@ -504,9 +516,7 @@ export default function HomePage() {
       const res = await fetch(look.imageSrc);
       const blob = await res.blob();
       const ext = look.imageSrc.match(/\.[^./\\]+$/)?.[0] ?? ".jpg";
-      const file = new File([blob], `${look.id}${ext}`, {
-        type: blob.type || "image/jpeg",
-      });
+      const file = new File([blob], `${look.id}${ext}`, { type: blob.type || "image/jpeg" });
       setGarmentFile(file);
       setCurrentStep(3);
     } catch {
@@ -520,44 +530,29 @@ export default function HomePage() {
     if (isSubmitting || inFlightRef.current) return;
     inFlightRef.current = true;
     const requestId = createRequestId();
-
     setIsSubmitting(true);
     setApiError(null);
     setApiSuccess(null);
-
     try {
       const formData = new FormData();
       formData.append("targetImage", personFile);
       formData.append("garmentImage", garmentFile);
       formData.append("requestId", requestId);
       formData.append("garmentDescription", garmentDescriptionForPrompt);
-
-      const res = await fetch(SEEDREAM_ENDPOINT, {
-        method: "POST",
-        body: formData,
-      });
-
+      const res = await fetch(SEEDREAM_ENDPOINT, { method: "POST", body: formData });
       const data = (await res.json()) as ApiSuccess | ApiError;
       if (!res.ok) {
-        setApiError(
-          (data as ApiError) ?? {
-            success: false,
-            error: { message: "Request failed." },
-          },
-        );
+        setApiError((data as ApiError) ?? { success: false, error: { message: "Request failed." } });
         return;
       }
-
       const success = data as ApiSuccess;
       setApiSuccess(success);
       setCurrentStep(4);
-
-      const productIdForTracking = selectedLookId ?? "custom_upload";
       void fetch("/api/events/try-on", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: productIdForTracking,
+          productId: selectedLookId ?? "custom_upload",
           userFitPreference: "Regular",
           matchConfidence: 0.95,
         }),
@@ -565,10 +560,7 @@ export default function HomePage() {
     } catch (error) {
       setApiError({
         success: false,
-        error: {
-          message: "Network error. Please try again.",
-          details: { reason: error instanceof Error ? error.message : "Unknown error" },
-        },
+        error: { message: "Network error. Please try again.", details: { reason: error instanceof Error ? error.message : "Unknown error" } },
       });
     } finally {
       setIsSubmitting(false);
@@ -596,6 +588,7 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
+      {/* רקע קטיפה קבוע */}
       <div
         className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-fixed"
         style={{ backgroundImage: `url('${VELVET_BG}')` }}
@@ -605,309 +598,300 @@ export default function HomePage() {
 
       <div className="relative z-10 flex w-full flex-col">
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
-        <header className="mb-10 w-full">
-          <div className="relative w-full overflow-hidden rounded-b-2xl" style={{ height: "200px" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/Luxury_fashion_flat_202603252000.jpeg"
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ objectPosition: "center 40%" }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.65) 100%)",
-              }}
-            />
-            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: "6px" }}>
-              <h1
-                style={{
-                  fontFamily: "Georgia,serif",
-                  fontSize: "44px",
-                  fontWeight: 700,
-                  letterSpacing: "16px",
-                  color: "#fff",
-                  margin: 0,
-                  lineHeight: 1,
-                  textShadow: "0 2px 20px rgba(0,0,0,0.8)",
-                }}
-              >
-                VESTI
-              </h1>
-              <div style={{ width: "90px", height: "1px", background: "#FF2800" }} />
-              <p
-                style={{
-                  fontFamily: "sans-serif",
-                  fontSize: "10px",
-                  fontWeight: 300,
-                  letterSpacing: "8px",
-                  color: "#FF2800",
-                  margin: 0,
-                }}
-              >
-                LINGERIE
-              </p>
-            </div>
-          </div>
-          <p
-            className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-center"
-            style={{ color: "rgba(255,255,255,0.7)" }}
-          >
-            Private try-on. One portrait. Your set. Instant confidence.
-          </p>
-        </header>
 
-        {currentStep < 4 && <StepIndicator currentStep={currentStep} />}
-
-        <div className="mt-10 w-full flex-1">
-          <AnimatePresence mode="wait">
-            {currentStep === 1 && (
-              <motion.div
-                key="s1"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="mx-auto flex w-full flex-col items-center"
-              >
-                <UploadPortraitCard
-                  preview={personPreview}
-                  onFileChange={setPersonFile}
-                  onClear={() => setPersonFile(null)}
-                />
-                {personPreview && bodyScanLoading && (
-                  <p className="mt-3 max-w-md text-xs text-[rgba(255,255,255,0.55)]">
-                    Mapping your silhouette for accurate sizing…
-                  </p>
-                )}
-                <button
-                  type="button"
-                  disabled={!personFile}
-                  onClick={() => setCurrentStep(2)}
-                  className={`mt-8 w-full max-w-md px-6 py-3.5 text-sm uppercase tracking-[0.18em] ${shieldButtonClass}`}
-                >
-                  Continue
-                </button>
-              </motion.div>
-            )}
-
-            {currentStep === 2 && !isSubmitting && (
-              <motion.div
-                key="s2"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="mx-auto flex w-full flex-col items-center text-center"
-              >
-                <p className="mb-6 text-sm text-[rgba(255,255,255,0.6)]">
-                  Upload your own reference, or choose a Victoria&apos;s Secret–style preset from our gallery.
+          {/* ─── Header ─── */}
+          <header className="mb-10 w-full">
+            <div className="relative w-full overflow-hidden rounded-b-2xl" style={{ height: "200px" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/Luxury_fashion_flat_202603252000.jpeg"
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: "center 40%" }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{ background: "linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.65) 100%)" }}
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: "6px" }}>
+                <h1 style={{ fontFamily: "Georgia,serif", fontSize: "44px", fontWeight: 700, letterSpacing: "16px", color: "#fff", margin: 0, lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
+                  VESTI
+                </h1>
+                <div style={{ width: "90px", height: "1px", background: "#FF2800" }} />
+                <p style={{ fontFamily: "sans-serif", fontSize: "10px", fontWeight: 300, letterSpacing: "8px", color: "#FF2800", margin: 0 }}>
+                  LINGERIE
                 </p>
+              </div>
+            </div>
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-center" style={{ color: "rgba(255,255,255,0.7)" }}>
+              Private try-on. One portrait. Your set. Instant confidence. ✦
+            </p>
+          </header>
 
-                <CustomGarmentUpload
-                  preview={selectedLookId === null ? garmentPreview : null}
-                  onFileChange={handleCustomGarmentFile}
-                  onClear={clearCustomGarment}
-                />
+          {currentStep < 4 && <StepIndicator currentStep={currentStep} />}
 
-                <div className="my-8 flex w-full max-w-md items-center gap-4">
-                  <div className="h-px flex-1 bg-white/15" />
-                  <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.45)]">
-                    Presets
-                  </span>
-                  <div className="h-px flex-1 bg-white/15" />
-                </div>
+          <div className="mt-10 w-full flex-1">
+            <AnimatePresence mode="wait">
 
-                {presetLooks.length === 0 ? (
-                  <p className="text-sm text-[rgba(255,255,255,0.6)]">Loading sets…</p>
-                ) : (
-                  <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
-                    {presetLooks.map((look) => {
-                      const selected = selectedLookId === look.id;
-                      return (
-                        <button
-                          key={look.id}
-                          type="button"
-                          onClick={() => void selectPresetLook(look)}
-                          className={
-                            selected
-                              ? `${shieldButtonClass} rounded-2xl p-1 ring-2 ring-[#FF2800]`
-                              : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
-                          }
-                        >
-                          <div
-                            className="relative aspect-[3/4] w-full min-h-[200px] overflow-hidden rounded-xl"
-                            style={{
-                              backgroundImage: "url(/Black_velvet_background_202603301114.jpeg)",
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                            }}
-                          >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={look.imageSrc}
-                              alt={look.title}
-                              className="relative z-10 h-full w-full object-contain"
-                            />
-                          </div>
-                          <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-white">{look.title}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                <div className="mt-10 flex w-full max-w-md justify-center">
+              {/* ─── שלב 1: העלאת תמונה ─── */}
+              {currentStep === 1 && (
+                <motion.div
+                  key="s1"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25 }}
+                  className="mx-auto flex w-full flex-col items-center"
+                >
+                  <UploadPortraitCard
+                    preview={personPreview}
+                    onFileChange={setPersonFile}
+                    onClear={() => setPersonFile(null)}
+                  />
+                  {personPreview && bodyScanLoading && (
+                    <p className="mt-3 max-w-md text-xs text-[rgba(255,255,255,0.55)]">
+                      Mapping your silhouette for accurate sizing…
+                    </p>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setCurrentStep(1)}
-                    className="rounded-xl border border-white/20 px-8 py-3 text-sm font-semibold text-[rgba(255,255,255,0.85)] hover:border-white"
+                    disabled={!personFile}
+                    onClick={() => setCurrentStep(2)}
+                    className={`mt-8 w-full max-w-md px-6 py-3.5 text-sm uppercase tracking-[0.18em] ${shieldButtonClass}`}
                   >
-                    Back
+                    Continue
                   </button>
-                </div>
-              </motion.div>
-            )}
+                </motion.div>
+              )}
 
-            {currentStep === 3 && (
-              <div key="s3" ref={stepTryOnRef} className="scroll-mt-28">
+              {/* ─── שלב 2: בחירת סט ─── */}
+              {currentStep === 2 && !isSubmitting && (
                 <motion.div
+                  key="s2"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.25 }}
                   className="mx-auto flex w-full flex-col items-center text-center"
                 >
-                <div className="mb-8 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
-                  {personPreview && (
-                    <div className="flex w-full max-w-md flex-col items-center gap-2">
-                      <div
-                        ref={portraitScanContainerRef}
-                        className={`relative mx-auto flex w-full max-w-sm items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black ${
-                          isSubmitting
-                            ? "min-h-[min(70vh,40rem)]"
-                            : "min-h-[min(52vh,30rem)] sm:min-h-[min(56vh,34rem)]"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          ref={portraitScanImageRef}
-                          src={personPreview}
-                          alt=""
-                          className="relative z-0 max-h-full max-w-full object-contain"
-                        />
-                        <BodyScanOverlay
-                          active={isSubmitting}
-                          containerRef={portraitScanContainerRef}
-                          imageRef={portraitScanImageRef}
-                          keypoints={bodyScanResult?.keypoints ?? FALLBACK_KEYPOINTS}
-                          measurementValues={bodyScanResult?.measurementValues ?? FALLBACK_MEASUREMENTS}
-                        />
-                      </div>
-                      <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">You</span>
-                    </div>
-                  )}
-                  {garmentPreview && !isSubmitting && (
-                    <div className="flex w-full max-w-xs flex-col items-center gap-2">
-                      <div className="relative flex min-h-[min(36vh,18rem)] w-full max-w-[15rem] items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black sm:max-w-[17rem]">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={garmentPreview}
-                          alt=""
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      </div>
-                      <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">Set</span>
-                    </div>
-                  )}
-                </div>
-
-                {apiError && (
-                  <p className="mb-6 max-w-md rounded-xl border border-[#FF2800] bg-black/60 px-4 py-3 text-sm text-white">
-                    {apiError.error?.message ?? "Something went wrong."}
+                  <p className="mb-6 text-sm text-[rgba(255,255,255,0.6)]">
+                    Upload your own reference, or choose a preset from our gallery.
                   </p>
-                )}
 
-                <button
-                  type="button"
-                  disabled={!personFile || !garmentFile || isSubmitting}
-                  onClick={() => void handleGenerate()}
-                  className={`relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden px-6 py-4 text-base font-bold uppercase tracking-[0.14em] sm:px-8 sm:tracking-[0.18em] ${shieldButtonClass}`}
-                >
-                  {isSubmitting ? (
-                    <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white sm:text-sm sm:tracking-[0.1em]">
-                      AI Analysis &amp; Lingerie Fusion in Progress...
-                    </span>
-                  ) : (
-                    "Generate"
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => setCurrentStep(2)}
-                  className="mt-6 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Back
-                </button>
-                </motion.div>
-              </div>
-            )}
-
-            {currentStep === 4 && resultUrl && (
-              <motion.div
-                key="s4"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="mx-auto flex w-full flex-col items-center text-center"
-              >
-                <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/10 bg-black p-2 shadow-[0_0_60px_rgba(255,40,0,0.15)] sm:p-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resultUrl}
-                    alt="Your Vesti Lingerie try-on result"
-                    className="mx-auto max-h-[min(78vh,720px)] w-full object-contain"
+                  <CustomGarmentUpload
+                    preview={selectedLookId === null ? garmentPreview : null}
+                    onFileChange={handleCustomGarmentFile}
+                    onClear={clearCustomGarment}
                   />
-                </div>
 
-                <div className="mt-10 w-full max-w-md rounded-2xl border border-white/12 bg-black/50 px-6 py-6 backdrop-blur-sm">
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Fit insight</p>
-                  <p className="mt-4 text-lg font-medium leading-relaxed text-white">
-                    AI Body Scan Complete. Your perfect fit for this set is{" "}
-                    <span className="whitespace-nowrap font-semibold text-white">
-                      {bodyScanResult?.recommendedBraSize ?? "—"}
+                  <div className="my-8 flex w-full max-w-md items-center gap-4">
+                    <div className="h-px flex-1 bg-white/15" />
+                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.45)]">
+                      Presets
                     </span>
-                    .
-                  </p>
-                  {bodyScanResult?.bodyAnalysis && (
-                    <p className="mt-3 text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
-                      {bodyScanResult.bodyAnalysis}
-                    </p>
+                    <div className="h-px flex-1 bg-white/15" />
+                  </div>
+
+                  {presetLooks.length === 0 ? (
+                    <p className="text-sm text-[rgba(255,255,255,0.6)]">Loading sets…</p>
+                  ) : (
+                    <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
+                      {presetLooks.map((look) => {
+                        const selected = selectedLookId === look.id;
+                        return (
+                          <button
+                            key={look.id}
+                            type="button"
+                            onClick={() => void selectPresetLook(look)}
+                            className={
+                              selected
+                                ? `${shieldButtonClass} rounded-2xl p-1 ring-2 ring-[#FF2800]`
+                                : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
+                            }
+                          >
+                            <div
+                              className="relative w-full overflow-hidden rounded-xl"
+                              style={{
+                                height: "200px",
+                                backgroundImage: "url(/Black_velvet_background_202603301114.jpeg)",
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                              }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={look.imageSrc}
+                                alt={look.title}
+                                className="h-full w-full object-contain"
+                              />
+                            </div>
+                            <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-white">
+                              {look.title}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
                   )}
-                  <p className="mt-3 text-[11px] text-[rgba(255,255,255,0.5)]">
-                    Confidence: {bodyScanResult?.confidence ?? "—"}
-                    {bodyScanResult?.fallback ? " · Estimate only" : ""}
-                  </p>
-                  <p className="mt-2 text-xs text-[rgba(255,255,255,0.6)]">
-                    Sizing is illustrative for this experience. Always confirm in-store or with a fit specialist.
-                  </p>
+
+                  <div className="mt-10 flex w-full max-w-md justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(1)}
+                      className="rounded-xl border border-white/20 px-8 py-3 text-sm font-semibold text-[rgba(255,255,255,0.85)] hover:border-white"
+                    >
+                      Back
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ─── שלב 3: גנרציה ─── */}
+              {currentStep === 3 && (
+                <div key="s3" ref={stepTryOnRef} className="scroll-mt-28">
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25 }}
+                    className="mx-auto flex w-full flex-col items-center text-center"
+                  >
+                    <div className="mb-8 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
+                      {/* תמונת האדם */}
+                      {personPreview && (
+                        <div className="flex w-full max-w-[280px] flex-col items-center gap-2">
+                          <div
+                            ref={portraitScanContainerRef}
+                            className={`relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black ${
+                              isSubmitting ? "h-[400px]" : "h-[400px]"
+                            }`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              ref={portraitScanImageRef}
+                              src={personPreview}
+                              alt=""
+                              className="relative z-0 max-h-full max-w-full object-contain"
+                            />
+                            <BodyScanOverlay
+                              active={isSubmitting}
+                              containerRef={portraitScanContainerRef}
+                              imageRef={portraitScanImageRef}
+                              keypoints={bodyScanResult?.keypoints ?? FALLBACK_KEYPOINTS}
+                              measurementValues={bodyScanResult?.measurementValues ?? FALLBACK_MEASUREMENTS}
+                            />
+                          </div>
+                          <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">You</span>
+                        </div>
+                      )}
+
+                      {/* תמונת הסט — אותו גודל בדיוק */}
+                      {garmentPreview && !isSubmitting && (
+                        <div className="flex w-full max-w-[280px] flex-col items-center gap-2">
+                          <div
+                            className="relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black"
+                            style={{ height: "400px" }}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={garmentPreview}
+                              alt=""
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                          <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">Set</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {apiError && (
+                      <p className="mb-6 max-w-md rounded-xl border border-[#FF2800] bg-black/60 px-4 py-3 text-sm text-white">
+                        {apiError.error?.message ?? "Something went wrong."}
+                      </p>
+                    )}
+
+                    <button
+                      type="button"
+                      disabled={!personFile || !garmentFile || isSubmitting}
+                      onClick={() => void handleGenerate()}
+                      className={`relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden px-6 py-4 text-base font-bold uppercase tracking-[0.14em] sm:px-8 sm:tracking-[0.18em] ${shieldButtonClass}`}
+                    >
+                      {isSubmitting ? (
+                        <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white sm:text-sm sm:tracking-[0.1em]">
+                          AI Analysis &amp; Lingerie Fusion in Progress...
+                        </span>
+                      ) : (
+                        "Generate"
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={() => setCurrentStep(2)}
+                      className="mt-6 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Back
+                    </button>
+                  </motion.div>
                 </div>
+              )}
 
-                <ShopTheLookButton resultUrl={resultUrl} />
-
-                <button
-                  type="button"
-                  onClick={resetFlow}
-                  className="mt-8 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] underline-offset-4 hover:text-white hover:underline"
+              {/* ─── שלב 4: תוצאה ─── */}
+              {currentStep === 4 && resultUrl && (
+                <motion.div
+                  key="s4"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mx-auto flex w-full flex-col items-center text-center"
                 >
-                  Try another look
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                  <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/10 bg-black p-2 shadow-[0_0_60px_rgba(255,40,0,0.15)] sm:p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resultUrl}
+                      alt="Your Vesti Lingerie try-on result"
+                      className="mx-auto max-h-[min(78vh,720px)] w-full object-contain"
+                    />
+                  </div>
+
+                  <div className="mt-10 w-full max-w-md rounded-2xl border border-white/12 bg-black/50 px-6 py-6 backdrop-blur-sm">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Fit insight</p>
+                    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+                      AI Body Scan Complete. Your perfect fit for this set is{" "}
+                      <span className="whitespace-nowrap font-semibold text-white">
+                        {bodyScanResult?.recommendedBraSize ?? "—"}
+                      </span>
+                      .
+                    </p>
+                    {bodyScanResult?.bodyAnalysis && (
+                      <p className="mt-3 text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
+                        {bodyScanResult.bodyAnalysis}
+                      </p>
+                    )}
+                    <p className="mt-3 text-[11px] text-[rgba(255,255,255,0.5)]">
+                      Confidence: {bodyScanResult?.confidence ?? "—"}
+                      {bodyScanResult?.fallback ? " · Estimate only" : ""}
+                    </p>
+                    <p className="mt-2 text-xs text-[rgba(255,255,255,0.6)]">
+                      Sizing is illustrative for this experience. Always confirm in-store or with a fit specialist.
+                    </p>
+                  </div>
+
+                  <ShopTheLookButton resultUrl={resultUrl} garmentFile={garmentFile} />
+
+                  <button
+                    type="button"
+                    onClick={resetFlow}
+                    className="mt-8 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] underline-offset-4 hover:text-white hover:underline"
+                  >
+                    Try another look
+                  </button>
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
