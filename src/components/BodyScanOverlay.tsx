@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import type { BodyKeypoints } from "../lib/body-scan";
 
-const MEASUREMENTS = [
-  { key: "shoulders", label: "SHOULDERS", final: "41 cm" },
-  { key: "bust", label: "BUST", final: "34" },
-  { key: "waist", label: "WAIST", final: "28" },
-  { key: "hips", label: "HIPS", final: "38" },
-] as const;
+const LABELS = ["SHOULDERS", "BUST", "WAIST", "HIPS"] as const;
 
 /** Initial “scan” phase — rapid noise / analyzing (ms) */
 const WARMUP_MS = 2600;
@@ -20,6 +16,10 @@ const TICK_MS = 90;
 type BodyScanOverlayProps = {
   active: boolean;
   className?: string;
+  /** Normalized keypoints from vision API (0–1). */
+  keypoints: BodyKeypoints;
+  /** Final display values for each row (e.g. cm or "—"). */
+  measurementValues: [string, string, string, string];
 };
 
 function randomReadingForRow(rowIdx: number, salt: number): string {
@@ -29,32 +29,42 @@ function randomReadingForRow(rowIdx: number, salt: number): string {
     case 0:
       return `${jitter(41, 8)} cm`;
     case 1:
-      return `${jitter(34, 6)}`;
+      return `${jitter(84, 10)} cm`;
     case 2:
-      return `${jitter(28, 5)}`;
+      return `${jitter(68, 8)} cm`;
     case 3:
-      return `${jitter(38, 7)}`;
+      return `${jitter(96, 12)} cm`;
     default:
       return "—";
   }
 }
 
-function lineForRow(rowIdx: number, elapsedMs: number, noiseTick: number): string {
-  const m = MEASUREMENTS[rowIdx];
+function lineForRow(
+  rowIdx: number,
+  elapsedMs: number,
+  noiseTick: number,
+  finalValues: [string, string, string, string],
+): string {
   const lockAt = WARMUP_MS + rowIdx * STAGGER_MS;
+  const final = `${LABELS[rowIdx]}: ${finalValues[rowIdx]}`;
   if (elapsedMs >= lockAt) {
-    return `${m.label}: ${m.final}`;
+    return final;
   }
   if (elapsedMs < WARMUP_MS) {
     if (noiseTick % 14 < 4) {
-      return `${m.label}: Analyzing...`;
+      return `${LABELS[rowIdx]}: Analyzing...`;
     }
-    return `${m.label}: ${randomReadingForRow(rowIdx, noiseTick)}`;
+    return `${LABELS[rowIdx]}: ${randomReadingForRow(rowIdx, noiseTick)}`;
   }
-  return `${m.label}: ${randomReadingForRow(rowIdx, noiseTick)}`;
+  return `${LABELS[rowIdx]}: ${randomReadingForRow(rowIdx, noiseTick)}`;
 }
 
-export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps) {
+export function BodyScanOverlay({
+  active,
+  className = "",
+  keypoints,
+  measurementValues,
+}: BodyScanOverlayProps) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [noiseTick, setNoiseTick] = useState(0);
 
@@ -70,22 +80,33 @@ export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps
     return () => window.clearInterval(id);
   }, [active]);
 
+  const layout = useMemo(() => {
+    const kp = keypoints;
+    const midSx = ((kp.leftShoulder.x + kp.rightShoulder.x) / 2) * 100;
+    const midSy = ((kp.leftShoulder.y + kp.rightShoulder.y) / 2) * 100;
+    const shoulderLabelY = Math.max(5, midSy - 5);
+
+    const shoulderDots = [
+      { x: kp.leftShoulder.x * 100, y: kp.leftShoulder.y * 100 },
+      { x: kp.rightShoulder.x * 100, y: kp.rightShoulder.y * 100 },
+    ];
+
+    const labelSlots = [
+      { x: midSx, y: shoulderLabelY, rowIdx: 0 as const },
+      { x: kp.bust.x * 100, y: kp.bust.y * 100, rowIdx: 1 as const },
+      { x: kp.waist.x * 100, y: kp.waist.y * 100, rowIdx: 2 as const },
+      { x: kp.hips.x * 100, y: kp.hips.y * 100, rowIdx: 3 as const },
+    ];
+
+    return { shoulderDots, labelSlots };
+  }, [keypoints]);
+
   if (!active) return null;
 
-  const labelSlots = [
-    { x: 50, y: 17, rowIdx: 0 as const },
-    { x: 50, y: 35, rowIdx: 1 as const },
-    { x: 50, y: 50, rowIdx: 2 as const },
-    { x: 50, y: 65, rowIdx: 3 as const },
-  ].map((slot) => ({
+  const labelSlotsRendered = layout.labelSlots.map((slot) => ({
     ...slot,
-    text: lineForRow(slot.rowIdx, elapsedMs, noiseTick),
+    text: lineForRow(slot.rowIdx, elapsedMs, noiseTick, measurementValues),
   }));
-
-  const shoulderDots = [
-    { x: 22, y: 21 },
-    { x: 78, y: 21 },
-  ];
 
   return (
     <div
@@ -125,7 +146,7 @@ export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps
         />
       </svg>
 
-      {shoulderDots.map((d, i) => (
+      {layout.shoulderDots.map((d, i) => (
         <div
           key={`sd-${i}`}
           className="absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white bg-[#FF2800] shadow-[0_0_12px_#FF2800]"
@@ -133,7 +154,7 @@ export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps
         />
       ))}
 
-      {labelSlots.map((slot, i) => (
+      {labelSlotsRendered.map((slot, i) => (
         <div
           key={`lbl-${i}`}
           className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"

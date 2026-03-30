@@ -4,6 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PresetLook } from "../lib/preset-looks";
+import type { BodyScanApiResponse } from "../lib/body-scan";
+import {
+  FALLBACK_KEYPOINTS,
+  FALLBACK_MEASUREMENTS,
+  makeFallbackBodyScan,
+} from "../lib/body-scan";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
@@ -247,6 +253,8 @@ export default function HomePage() {
   const [apiSuccess, setApiSuccess] = useState<ApiSuccess | null>(null);
   const inFlightRef = useRef(false);
   const stepTryOnRef = useRef<HTMLDivElement>(null);
+  const [bodyScanResult, setBodyScanResult] = useState<BodyScanApiResponse | null>(null);
+  const [bodyScanLoading, setBodyScanLoading] = useState(false);
 
   const personPreview = useMemo(() => {
     if (!personFile) return null;
@@ -304,6 +312,52 @@ export default function HomePage() {
     }, 100);
     return () => window.clearTimeout(t);
   }, [currentStep]);
+
+  useEffect(() => {
+    if (!personFile) {
+      setBodyScanResult(null);
+      setBodyScanLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setBodyScanLoading(true);
+    setBodyScanResult(null);
+
+    const fd = new FormData();
+    fd.append("image", personFile);
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/body-scan-from-image", {
+          method: "POST",
+          body: fd,
+        });
+        const data = (await res.json()) as BodyScanApiResponse | { success?: boolean; error?: unknown };
+        if (cancelled) return;
+        if (
+          res.ok &&
+          data &&
+          typeof data === "object" &&
+          "success" in data &&
+          data.success === true &&
+          "keypoints" in data &&
+          Array.isArray((data as BodyScanApiResponse).measurementValues)
+        ) {
+          setBodyScanResult(data as BodyScanApiResponse);
+        } else {
+          setBodyScanResult(makeFallbackBodyScan());
+        }
+      } catch {
+        if (!cancelled) setBodyScanResult(makeFallbackBodyScan());
+      } finally {
+        if (!cancelled) setBodyScanLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [personFile]);
 
   function handleCustomGarmentFile(file: File) {
     setGarmentFile(file);
@@ -400,6 +454,8 @@ export default function HomePage() {
     setCurrentStep(1);
     setApiError(null);
     setApiSuccess(null);
+    setBodyScanResult(null);
+    setBodyScanLoading(false);
   }
 
   const resultUrl =
@@ -453,6 +509,11 @@ export default function HomePage() {
                   onFileChange={setPersonFile}
                   onClear={() => setPersonFile(null)}
                 />
+                {personPreview && bodyScanLoading && (
+                  <p className="mt-3 max-w-md text-xs text-[rgba(255,255,255,0.55)]">
+                    Mapping your silhouette for accurate sizing…
+                  </p>
+                )}
                 <button
                   type="button"
                   disabled={!personFile}
@@ -559,7 +620,11 @@ export default function HomePage() {
                           alt=""
                           className="relative z-0 max-h-full max-w-full object-contain"
                         />
-                        <BodyScanOverlay active={isSubmitting} />
+                        <BodyScanOverlay
+                          active={isSubmitting}
+                          keypoints={bodyScanResult?.keypoints ?? FALLBACK_KEYPOINTS}
+                          measurementValues={bodyScanResult?.measurementValues ?? FALLBACK_MEASUREMENTS}
+                        />
                       </div>
                       <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">You</span>
                     </div>
@@ -632,7 +697,20 @@ export default function HomePage() {
                 <div className="mt-10 w-full max-w-md rounded-2xl border border-white/12 bg-black/50 px-6 py-6 backdrop-blur-sm">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Fit insight</p>
                   <p className="mt-4 text-lg font-medium leading-relaxed text-white">
-                    AI Body Scan Complete. Your perfect fit for this set is 34C.
+                    AI Body Scan Complete. Your perfect fit for this set is{" "}
+                    <span className="whitespace-nowrap font-semibold text-white">
+                      {bodyScanResult?.recommendedBraSize ?? "—"}
+                    </span>
+                    .
+                  </p>
+                  {bodyScanResult?.bodyAnalysis && (
+                    <p className="mt-3 text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
+                      {bodyScanResult.bodyAnalysis}
+                    </p>
+                  )}
+                  <p className="mt-3 text-[11px] text-[rgba(255,255,255,0.5)]">
+                    Confidence: {bodyScanResult?.confidence ?? "—"}
+                    {bodyScanResult?.fallback ? " · Estimate only" : ""}
                   </p>
                   <p className="mt-2 text-xs text-[rgba(255,255,255,0.6)]">
                     Sizing is illustrative for this experience. Always confirm in-store or with a fit specialist.

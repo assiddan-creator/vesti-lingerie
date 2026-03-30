@@ -80,22 +80,21 @@ function extractUrlFromFirstItem(firstItem: unknown): string | null {
 }
 
 function buildSeedreamPrompt(refinePrompt: string | null) {
-  // Natural language for Seedream: two-image virtual try-on with strict feminine fashion output.
+  // Seedream 5.0 Lite: two-image virtual try-on + directed lingerie aesthetic (see product prompt below).
   const basePrompt = [
-    "You are given two reference images. Image A is the target person photograph. Image B is the lingerie or garment reference (flat lay, product shot, or worn reference).",
+    "You are given two reference images: Image A is the target person photograph. Image B is the lingerie or garment reference (flat lay, product shot, or worn reference). Use Image B for the clothing design, color, pattern, and fabric; apply it to the person in Image A.",
     "",
-    "Transform the person's clothing to the specified lingerie or garment from Image B while maintaining the user's original face, identity, and exact pose from Image A.",
-    "Transfer only the clothing appearance from Image B onto the person in Image A. Do not replace or alter the person's identity.",
+    "Transform the user's clothing into the specified dark red patterned lingerie/sleepwear two-piece set, maintaining the user's original face, identity, and exact standing pose. Transfer only the clothing from Image B onto the person in Image A; do not replace identity.",
     "",
-    "CRITICAL — feminine anatomy and quality:",
-    "The subject must have flawless, anatomically correct, highly realistic female proportions.",
-    "Ensure the legs, arms, hips, bust, and full body structure remain feminine, elegant, and perfectly natural — no masculine facial or body features, no broadening of the jaw or shoulders beyond what appears in Image A, and no distortion of feminine silhouette.",
-    "The skin should be smooth and photorealistic, matching the lighting of a high-end luxury fashion shoot.",
-    "Seamlessly blend the new garment onto the user's body without any artificial edges, harsh cut lines, or masculine distortions.",
-    "Avoid warped limbs, bent or uneven legs, duplicated joints, or anatomically impossible poses. Hands, feet, and proportions must remain natural and consistent with Image A.",
+    "CRITICAL FIX — lower body and legs:",
+    "Ensure the entire lower body structure below the shorts (legs, ankles, and feet) is completely streamlined, slender, and delicately proportioned.",
+    "The silhouette must be clean, lean, and elegant, optimizing for a high-end fashion and delicate lingerie modeling aesthetic.",
+    "Explicitly replace any overly muscular definition, thickened structure, or aggressive definition in the legs and calves with a natural, sleek, and smooth feminine aesthetic.",
+    "Pay close attention to natural ankle definition and delicate proportions of the feet.",
     "",
-    "Preserve from Image A: exact pose, framing, background, camera angle, depth of field, shadows, and overall scene realism. Keep the full subject visible; do not crop unexpectedly.",
-    "From Image B, preserve garment details: color, material, texture, pattern, cut, neckline, straps, lace or trim, and fit — with natural drape and folds for the pose and lighting.",
+    "Quality and scene:",
+    "Seamlessly blend the new garment onto the body without artificial edges or distortions. Avoid warped limbs or duplicated joints.",
+    "Maintain consistent lighting and background: deep black velvet with scattered rich red rose petals (match this mood if Image A differs; otherwise harmonize with Image A’s scene).",
     "",
     "Output one single high-quality photorealistic edited image.",
   ].join("\n");
