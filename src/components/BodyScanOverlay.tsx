@@ -10,38 +10,77 @@ const MEASUREMENTS = [
   { key: "hips", label: "HIPS", final: "38" },
 ] as const;
 
+/** Initial “scan” phase — rapid noise / analyzing (ms) */
+const WARMUP_MS = 2600;
+/** Delay between each measurement locking in (ms) */
+const STAGGER_MS = 550;
+/** How often to refresh random readings (ms) */
+const TICK_MS = 90;
+
 type BodyScanOverlayProps = {
   active: boolean;
   className?: string;
 };
 
+function randomReadingForRow(rowIdx: number, salt: number): string {
+  const jitter = (n: number, spread: number) =>
+    Math.max(0, Math.round(n + (Math.sin(salt * 0.7 + rowIdx + spread) * spread) / 2 + (Math.random() - 0.5) * spread));
+  switch (rowIdx) {
+    case 0:
+      return `${jitter(41, 8)} cm`;
+    case 1:
+      return `${jitter(34, 6)}`;
+    case 2:
+      return `${jitter(28, 5)}`;
+    case 3:
+      return `${jitter(38, 7)}`;
+    default:
+      return "—";
+  }
+}
+
+function lineForRow(rowIdx: number, elapsedMs: number, noiseTick: number): string {
+  const m = MEASUREMENTS[rowIdx];
+  const lockAt = WARMUP_MS + rowIdx * STAGGER_MS;
+  if (elapsedMs >= lockAt) {
+    return `${m.label}: ${m.final}`;
+  }
+  if (elapsedMs < WARMUP_MS) {
+    if (noiseTick % 14 < 4) {
+      return `${m.label}: Analyzing...`;
+    }
+    return `${m.label}: ${randomReadingForRow(rowIdx, noiseTick)}`;
+  }
+  return `${m.label}: ${randomReadingForRow(rowIdx, noiseTick)}`;
+}
+
 export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps) {
-  const [tick, setTick] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [noiseTick, setNoiseTick] = useState(0);
 
   useEffect(() => {
     if (!active) return;
-    setTick(0);
-    const id = window.setInterval(() => setTick((t) => t + 1), 520);
+    setElapsedMs(0);
+    setNoiseTick(0);
+    const start = performance.now();
+    const id = window.setInterval(() => {
+      setElapsedMs(Math.round(performance.now() - start));
+      setNoiseTick((n) => n + 1);
+    }, TICK_MS);
     return () => window.clearInterval(id);
   }, [active]);
 
   if (!active) return null;
 
-  function lineFor(idx: number) {
-    const m = MEASUREMENTS[idx];
-    const threshold = 2 + idx * 2;
-    if (tick < threshold) {
-      return `${m.label}: Analyzing...`;
-    }
-    return `${m.label}: ${m.final}`;
-  }
-
   const labelSlots = [
-    { x: 50, y: 17, text: lineFor(0) },
-    { x: 50, y: 35, text: lineFor(1) },
-    { x: 50, y: 50, text: lineFor(2) },
-    { x: 50, y: 65, text: lineFor(3) },
-  ];
+    { x: 50, y: 17, rowIdx: 0 as const },
+    { x: 50, y: 35, rowIdx: 1 as const },
+    { x: 50, y: 50, rowIdx: 2 as const },
+    { x: 50, y: 65, rowIdx: 3 as const },
+  ].map((slot) => ({
+    ...slot,
+    text: lineForRow(slot.rowIdx, elapsedMs, noiseTick),
+  }));
 
   const shoulderDots = [
     { x: 22, y: 21 },
@@ -102,7 +141,9 @@ export function BodyScanOverlay({ active, className = "" }: BodyScanOverlayProps
         >
           <div className="mb-1 h-2 w-2 rounded-full border border-white bg-[#FF2800] shadow-[0_0_12px_#FF2800]" />
           <div className="min-w-[10rem] max-w-[12rem] rounded-md border border-white/30 bg-black/75 px-2 py-1.5 text-center shadow-[0_0_18px_rgba(255,40,0,0.25)] backdrop-blur-[2px]">
-            <p className="text-[10px] font-bold leading-tight tracking-wide text-white sm:text-[11px]">{slot.text}</p>
+            <p className="text-[10px] font-bold leading-tight tracking-wide text-white tabular-nums sm:text-[11px]">
+              {slot.text}
+            </p>
           </div>
         </div>
       ))}
