@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Playfair_Display } from "next/font/google";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import type { PresetLook } from "../lib/preset-looks";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
-const brandSerif = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
+const VELVET_BG = "/Black_velvet_background_202603301114.jpg";
+const BRAND_EMBLEM = "/Brand_emblem_with_202603301111.jpg";
+
+/** Premium shield: black fill, white border & text, always-visible #FF2800 glow */
+const shieldButtonClass =
+  "rounded-2xl border-2 border-white bg-black font-semibold text-white shadow-[0_0_28px_rgba(255,40,0,0.7),0_0_56px_rgba(255,40,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] transition-[box-shadow,filter] hover:shadow-[0_0_40px_rgba(255,40,0,0.85),0_0_72px_rgba(255,40,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800] disabled:cursor-not-allowed disabled:opacity-40";
 
 /** Frontend always uses Seedream 5 Lite (`bytedance/seedream-5-lite` on the server). */
 const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
@@ -65,7 +67,7 @@ function UploadPortraitCard({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="group relative flex min-h-52 w-full max-w-sm flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800]"
+        className={`group relative flex min-h-52 w-full max-w-sm flex-col items-center justify-center gap-3 px-4 ${shieldButtonClass}`}
       >
         {preview ? (
           <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-black/60 p-3">
@@ -90,7 +92,7 @@ function UploadPortraitCard({
                 />
               </svg>
             </div>
-            <span className="text-sm font-medium text-[rgba(255,255,255,0.6)] group-hover:text-white">Upload photo</span>
+            <span className="text-sm font-bold uppercase tracking-[0.14em] text-white">Upload photo</span>
           </>
         )}
       </button>
@@ -141,7 +143,7 @@ function CustomGarmentUpload({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="group flex min-h-[8.5rem] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/25 bg-black/40 px-4 py-6 text-center transition-[border-color,box-shadow] hover:border-[#FF2800]/80 hover:shadow-[0_0_28px_rgba(255,40,0,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800]"
+        className={`group flex min-h-[8.5rem] w-full flex-col items-center justify-center gap-2 px-4 py-6 text-center ${shieldButtonClass}`}
       >
         {preview ? (
           <div className="relative h-28 w-full max-w-[200px] overflow-hidden rounded-xl border border-white/10">
@@ -166,7 +168,7 @@ function CustomGarmentUpload({
                 />
               </svg>
             </div>
-            <span className="text-sm font-semibold tracking-wide text-white">Upload custom lingerie</span>
+            <span className="text-sm font-bold uppercase tracking-[0.12em] text-white">Select lingerie — upload</span>
             <span className="max-w-[240px] text-xs leading-relaxed text-[rgba(255,255,255,0.55)]">
               Flat lay or product photo. PNG or JPG.
             </span>
@@ -203,7 +205,7 @@ function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
   const steps = [
     { n: 1 as const, label: "Your photo" },
     { n: 2 as const, label: "Your set" },
-    { n: 3 as const, label: "Try on" },
+    { n: 3 as const, label: "Generate" },
   ];
   return (
     <div className="flex items-center justify-center gap-8 border-b border-white pb-5 sm:gap-12">
@@ -402,16 +404,27 @@ export default function HomePage() {
         : null;
 
   return (
-    <div className="min-h-screen bg-[#000000] text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center px-4 py-10 sm:px-6 sm:py-14">
+    <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: `url('${VELVET_BG}')` }}
+        aria-hidden
+      />
+      <div className="pointer-events-none fixed inset-0 z-[1] bg-black/40" aria-hidden />
+
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
         <header className="mb-10 flex w-full flex-col items-center text-center">
-          <h1
-            className={`${brandSerif.className} relative mx-auto inline-block max-w-[20ch] text-center text-[2rem] font-normal leading-tight tracking-[0.08em] text-white sm:text-5xl sm:tracking-[0.1em]`}
-          >
-            Vesti Lingerie
-            <span className="absolute -bottom-3 left-0 right-0 h-px bg-[#FF2800]" aria-hidden />
-          </h1>
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.6)]">
+          <div className="mx-auto flex justify-center">
+            <Image
+              src={BRAND_EMBLEM}
+              alt="Vesti Lingerie"
+              width={150}
+              height={150}
+              priority
+              className="h-[120px] w-[120px] object-contain drop-shadow-[0_4px_24px_rgba(255,40,0,0.55)] sm:h-[150px] sm:w-[150px]"
+            />
+          </div>
+          <p className="mx-auto mt-6 max-w-md text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
             Private try-on. One portrait. Your set. Instant confidence.
           </p>
         </header>
@@ -438,7 +451,7 @@ export default function HomePage() {
                   type="button"
                   disabled={!personFile}
                   onClick={() => setCurrentStep(2)}
-                  className="mt-8 w-full max-w-md rounded-xl bg-[#FF2800] px-6 py-3.5 text-sm font-semibold uppercase tracking-[0.2em] text-white shadow-[0_0_28px_rgba(255,40,0,0.35)] transition-[filter,box-shadow] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`mt-8 w-full max-w-md px-6 py-3.5 text-sm uppercase tracking-[0.18em] ${shieldButtonClass}`}
                 >
                   Continue
                 </button>
@@ -485,8 +498,8 @@ export default function HomePage() {
                           onClick={() => void selectPresetLook(look)}
                           className={
                             selected
-                              ? "rounded-2xl border-2 border-[#FF2800] bg-black/40 p-1 shadow-[0_0_24px_rgba(255,40,0,0.25)]"
-                              : "rounded-2xl border border-white/15 bg-black/40 p-1 hover:border-white/30"
+                              ? `${shieldButtonClass} rounded-2xl p-1 ring-2 ring-[#FF2800]`
+                              : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
                           }
                         >
                           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-black">
@@ -562,14 +575,14 @@ export default function HomePage() {
                   type="button"
                   disabled={!personFile || !garmentFile || isSubmitting}
                   onClick={() => void handleGenerate()}
-                  className="relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden rounded-2xl border-2 border-white bg-black px-6 py-4 text-base font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_48px_rgba(255,40,0,0.55),inset_0_1px_0_rgba(255,255,255,0.12)] transition-[filter,box-shadow] hover:shadow-[0_0_56px_rgba(255,40,0,0.7)] disabled:cursor-not-allowed disabled:opacity-40 sm:px-8 sm:tracking-[0.2em]"
+                  className={`relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden px-6 py-4 text-base font-bold uppercase tracking-[0.14em] sm:px-8 sm:tracking-[0.18em] ${shieldButtonClass}`}
                 >
                   {isSubmitting ? (
                     <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white sm:text-sm sm:tracking-[0.1em]">
                       AI Analysis &amp; Lingerie Fusion in Progress...
                     </span>
                   ) : (
-                    "Try it on"
+                    "Generate"
                   )}
                 </button>
 
@@ -612,7 +625,7 @@ export default function HomePage() {
 
                 <button
                   type="button"
-                  className="mt-8 w-full max-w-md rounded-xl bg-[#FF2800] px-8 py-4 text-sm font-bold uppercase tracking-[0.25em] text-white shadow-[0_0_40px_rgba(255,40,0,0.55)] transition-[filter,box-shadow] hover:brightness-110"
+                  className={`mt-8 w-full max-w-md px-8 py-4 text-sm font-bold uppercase tracking-[0.22em] ${shieldButtonClass}`}
                 >
                   Buy now
                 </button>
