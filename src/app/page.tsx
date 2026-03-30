@@ -12,7 +12,11 @@ import {
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
 const shieldButtonClass =
-  "rounded-2xl border-2 border-white bg-black font-semibold text-white shadow-[0_0_28px_rgba(255,40,0,0.7),0_0_56px_rgba(255,40,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] transition-[box-shadow,filter] hover:shadow-[0_0_40px_rgba(255,40,0,0.85),0_0_72px_rgba(255,40,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800] disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-2xl border-2 border-white font-semibold text-white shadow-[0_0_28px_rgba(255,40,0,0.7),0_0_56px_rgba(255,40,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] transition-[box-shadow,filter] hover:shadow-[0_0_40px_rgba(255,40,0,0.85),0_0_72px_rgba(255,40,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800] disabled:cursor-not-allowed disabled:opacity-40 bg-cover bg-center bg-no-repeat";
+
+const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
+const HERO_IMG = "/Luxury_fashion_flat_202603252000.jpeg";
+const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
 
 // ─── ShopTheLookButton ───────────────────────────────────────────────────────
 // מקבל גם את garmentFile כדי לשלוח את תמונת הבגד המקורית לגוגל ויז'ן
@@ -132,6 +136,7 @@ function ShopTheLookButton({
             target="_blank"
             rel="noopener noreferrer"
             className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${shieldButtonClass}`}
+            style={{ backgroundImage: `url(${HERO_IMG})` }}
           >
             Search on Asos
           </a>
@@ -140,6 +145,7 @@ function ShopTheLookButton({
             target="_blank"
             rel="noopener noreferrer"
             className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${shieldButtonClass}`}
+            style={{ backgroundImage: `url(${HERO_IMG})` }}
           >
             Search on Google
           </a>
@@ -164,10 +170,6 @@ function ShopTheLookButton({
     </div>
   );
 }
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
-const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type ApiSuccess = {
@@ -225,6 +227,7 @@ function UploadPortraitCard({
         className={`group relative flex w-full max-w-sm flex-col items-center justify-center gap-3 px-4 ${shieldButtonClass} ${
           preview ? "min-h-[min(72vh,40rem)] sm:min-h-[min(76vh,44rem)]" : "min-h-52"
         }`}
+        style={{ backgroundImage: `url(${HERO_IMG})` }}
       >
         {preview ? (
           <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-black p-2 sm:p-3">
@@ -302,6 +305,7 @@ function CustomGarmentUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         className={`group flex min-h-[8.5rem] w-full flex-col items-center justify-center gap-2 px-4 py-6 text-center ${shieldButtonClass}`}
+        style={{ backgroundImage: `url(${HERO_IMG})` }}
       >
         {preview ? (
           <div className="relative flex min-h-44 w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black sm:min-h-52">
@@ -591,7 +595,7 @@ export default function HomePage() {
       {/* רקע קטיפה קבוע */}
       <div
         className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-fixed"
-        style={{ backgroundImage: `url('${VELVET_BG}')` }}
+        style={{ backgroundImage: `url('${HERO_IMG}')` }}
         aria-hidden
       />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-black/40" aria-hidden />
@@ -604,7 +608,7 @@ export default function HomePage() {
             <div className="relative w-full overflow-hidden rounded-b-2xl" style={{ height: "200px" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/Luxury_fashion_flat_202603252000.jpeg"
+                src={HERO_IMG}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
                 style={{ objectPosition: "center 40%" }}
@@ -658,6 +662,7 @@ export default function HomePage() {
                     disabled={!personFile}
                     onClick={() => setCurrentStep(2)}
                     className={`mt-8 w-full max-w-md px-6 py-3.5 text-sm uppercase tracking-[0.18em] ${shieldButtonClass}`}
+                    style={{ backgroundImage: `url(${HERO_IMG})` }}
                   >
                     Continue
                   </button>
@@ -708,12 +713,13 @@ export default function HomePage() {
                                 ? `${shieldButtonClass} rounded-2xl p-1 ring-2 ring-[#FF2800]`
                                 : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
                             }
+                            style={{ backgroundImage: `url(${HERO_IMG})` }}
                           >
                             <div
                               className="relative w-full overflow-hidden rounded-xl"
                               style={{
                                 height: "200px",
-                                backgroundImage: "url(/Black_velvet_background_202603301114.jpeg)",
+                                backgroundImage: `url('${VELVET_BG}')`,
                                 backgroundSize: "cover",
                                 backgroundPosition: "center",
                               }}
@@ -738,7 +744,8 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
-                      className="rounded-xl border border-white/20 px-8 py-3 text-sm font-semibold text-[rgba(255,255,255,0.85)] hover:border-white"
+                      className={`px-8 py-3 text-sm font-semibold text-white ${shieldButtonClass}`}
+                      style={{ backgroundImage: `url(${HERO_IMG})` }}
                     >
                       Back
                     </button>
@@ -815,6 +822,7 @@ export default function HomePage() {
                       disabled={!personFile || !garmentFile || isSubmitting}
                       onClick={() => void handleGenerate()}
                       className={`relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden px-6 py-4 text-base font-bold uppercase tracking-[0.14em] sm:px-8 sm:tracking-[0.18em] ${shieldButtonClass}`}
+                      style={{ backgroundImage: `url(${HERO_IMG})` }}
                     >
                       {isSubmitting ? (
                         <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white sm:text-sm sm:tracking-[0.1em]">
