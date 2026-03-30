@@ -1,0 +1,38 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Merchant {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id          String       @id @default(cuid())
+  merchantId  String
+  merchant    Merchant     @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  name        String
+  category    String
+  imageUrl    String?
+  tryOnEvents TryOnEvent[]
+}
+
+model TryOnEvent {
+  id                    String   @id @default(cuid())
+  productId             String?
+  product               Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userFitPreference     String
+  originalUserImageUrl  String?
+  matchConfidence       Float?
+  createdAt             DateTime @default(now())
+}

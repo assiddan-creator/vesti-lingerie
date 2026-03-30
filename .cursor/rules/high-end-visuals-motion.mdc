@@ -1,0 +1,12 @@
+---
+description: Create premium visuals with interactive galleries and smooth motion
+alwaysApply: true
+---
+
+# High-End Visuals and Motion
+
+- Implement interactive image galleries with polished transitions, hover states, and keyboard support.
+- Use Framer Motion for smooth, purposeful animations that support storytelling and conversion.
+- Animate with restraint: prioritize clarity, performance, and reduced-motion accessibility.
+- Use lazy loading, responsive image sizing, and optimized media handling for visual-heavy pages.
+- Favor micro-interactions that communicate state and elevate perceived quality.

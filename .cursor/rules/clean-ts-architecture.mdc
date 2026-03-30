@@ -1,0 +1,12 @@
+---
+description: Enforce modular components and clean TypeScript architecture
+alwaysApply: true
+---
+
+# Clean Code Architecture
+
+- Use TypeScript throughout and prefer explicit, composable types for public interfaces.
+- Keep components modular, focused, and reusable; split large UI into feature-oriented sections.
+- Separate concerns across `components`, `lib`, and feature modules.
+- Prefer small pure utilities, typed props, and predictable data flow.
+- Keep naming clear and consistent, and avoid dead code or overly complex abstractions.

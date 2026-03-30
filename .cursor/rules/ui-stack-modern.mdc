@@ -1,0 +1,12 @@
+---
+description: Enforce Tailwind, shadcn/ui, and Magic UI for modern UI
+alwaysApply: true
+---
+
+# Modern UI Stack
+
+- Build UI using Tailwind CSS utility classes as the default styling approach.
+- Prefer `shadcn/ui` components for accessible, reusable primitives.
+- Use Magic UI components for premium sections, motion-rich blocks, and hero visuals.
+- Avoid ad-hoc CSS unless a utility-first or component-based approach cannot solve the need.
+- Keep spacing, typography, and color usage consistent with a defined design token mindset.
