@@ -1,195 +1,79 @@
 import { NextRequest, NextResponse } from "next/server";
 
-type VisionAnnotateResponse = {
-  responses?: Array<{
-    error?: { code?: number; message?: string };
-    labelAnnotations?: Array<{ description?: string; score?: number }>;
-    localizedObjectAnnotations?: Array<{ name?: string; score?: number }>;
-    webDetection?: {
-      webEntities?: Array<{ description?: string; score?: number }>;
-      bestGuessLabels?: Array<{ label?: string }>;
-      pagesWithMatchingImages?: Array<{ pageTitle?: string; url?: string }>;
-      visuallySimilarImages?: unknown;
-    };
-  }>;
-};
-
-function stripDataUrlToRawBase64(input: string): string {
-  const trimmed = input.trim();
-  const m = /^data:[^;]+;base64,([\s\S]+)$/.exec(trimmed);
-  const raw = m ? m[1] : trimmed;
-  return raw.replace(/\s/g, "");
-}
-
-function buildVisionSummary(v: VisionAnnotateResponse): Record<string, unknown> {
-  const r = v.responses?.[0];
-  if (!r || r.error) {
-    return { error: r?.error?.message ?? "No vision response" };
-  }
-  return {
-    labels: (r.labelAnnotations ?? [])
-      .slice(0, 25)
-      .map((x) => ({ description: x.description, score: x.score })),
-    objects: (r.localizedObjectAnnotations ?? [])
-      .slice(0, 10)
-      .map((x) => ({ name: x.name, score: x.score })),
-    web: {
-      bestGuessLabels: r.webDetection?.bestGuessLabels,
-      webEntities: (r.webDetection?.webEntities ?? [])
-        .slice(0, 15)
-        .map((x) => ({ description: x.description, score: x.score })),
-      pageTitles: (r.webDetection?.pagesWithMatchingImages ?? [])
-        .slice(0, 8)
-        .map((p) => p.pageTitle)
-        .filter(Boolean),
-    },
-  };
-}
-
-async function callGoogleVision(imageBase64Raw: string, apiKey: string): Promise<VisionAnnotateResponse> {
-  const res = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${encodeURIComponent(apiKey)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      requests: [
-        {
-          image: { content: imageBase64Raw },
-          features: [
-            { type: "LABEL_DETECTION", maxResults: 25 },
-            { type: "OBJECT_LOCALIZATION", maxResults: 10 },
-            { type: "WEB_DETECTION", maxResults: 10 },
-          ],
-        },
-      ],
-    }),
-  });
-
-  const data = (await res.json()) as VisionAnnotateResponse;
-  if (!res.ok) {
-    const msg = (data as { error?: { message?: string } }).error?.message ?? res.statusText;
-    throw new Error(`Google Vision API error: ${msg}`);
-  }
-  const err = data.responses?.[0]?.error;
-  if (err?.message) {
-    throw new Error(`Google Vision: ${err.message}`);
-  }
-  return data;
-}
-
-async function generateShoppingQueryFromVision(visionSummary: Record<string, unknown>, apiKey: string): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 120,
-      messages: [
-        {
-          role: "user",
-          content: `You are a shopping search expert for a luxury lingerie boutique. Below is structured output from Google Cloud Vision for a virtual try-on result image.
-
-IMPORTANT: This is a lingerie try-on app. Always output a lingerie-focused search query.
-
-Your task: output EXACTLY ONE line containing a 3-6 word English search query for Google Shopping focused on LINGERIE or INTIMATE APPAREL.
-
-Look at the Vision data for color (red, black, white, pink, nude), style (lace, satin, silk, floral, strappy, bralette, bodysuit, corset), and use these to build a specific lingerie query.
-
-Examples: black lace bralette set / red satin lingerie set / floral lace bra set
-
-No brand names. No quotes. No punctuation at end. One line only.
-
-Vision data (JSON):
-${JSON.stringify(visionSummary, null, 2)}`,
-        },
-      ],
-    }),
-  });
-
-  const data = (await res.json()) as {
-    error?: { message?: string };
-    content?: Array<{ type: string; text?: string }>;
-  };
-
-  if (!res.ok) {
-    throw new Error(data.error?.message ?? `Anthropic API error (${res.status})`);
-  }
-
-  const text = data.content?.find((c) => c.type === "text")?.text?.trim() ?? "";
-  const line = text.split(/\r?\n/).map((l) => l.trim()).find((l) => l.length > 0) ?? "";
-  const cleaned = line.replace(/^["']|["']$/g, "").trim();
-  if (!cleaned) {
-    throw new Error("Claude returned an empty search query.");
-  }
-  return cleaned.slice(0, 200);
-}
-
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as {
-    searchQuery?: string;
-    imageBase64?: string;
-  };
-
+  const body = (await req.json()) as { imageBase64?: string };
   const imageBase64 =
-    typeof body.imageBase64 === "string" && body.imageBase64.replace(/\s/g, "").length > 0
-      ? body.imageBase64
-      : null;
+    typeof body.imageBase64 === "string" && body.imageBase64.length > 0 ? body.imageBase64 : null;
 
   if (!imageBase64) {
     return NextResponse.json(
-      {
-        error: "imageBase64 is required (non-empty data URL or raw base64).",
-        generatedQuery: null,
-        shoppingResults: [],
-      },
+      { error: "imageBase64 is required", generatedQuery: null, shoppingResults: [] },
       { status: 400 },
     );
   }
 
-  const visionKey = process.env.GOOGLE_VISION_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const serpKey = process.env.SERP_API_KEY;
 
-  if (!visionKey) {
+  if (!anthropicKey || !serpKey) {
     return NextResponse.json(
-      { error: "GOOGLE_VISION_API_KEY is not configured", generatedQuery: null, shoppingResults: [] },
-      { status: 500 },
-    );
-  }
-  if (!anthropicKey) {
-    return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY is not configured", generatedQuery: null, shoppingResults: [] },
-      { status: 500 },
-    );
-  }
-  if (!serpKey) {
-    return NextResponse.json(
-      { error: "SERP_API_KEY is not configured", generatedQuery: null, shoppingResults: [] },
+      { error: "Missing API keys", generatedQuery: null, shoppingResults: [] },
       { status: 500 },
     );
   }
 
   try {
-    const rawBase64 = stripDataUrlToRawBase64(imageBase64);
+    const rawBase64 = imageBase64.includes(",") ? imageBase64.split(",")[1] : imageBase64;
 
-    const visionJson = await callGoogleVision(rawBase64, visionKey);
-    const visionSummary = buildVisionSummary(visionJson);
+    const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": anthropicKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 150,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: { type: "base64", media_type: "image/jpeg", data: rawBase64 },
+              },
+              {
+                type: "text",
+                text: `You are a lingerie shopping expert. Look at this lingerie or intimate apparel image carefully.
 
-    if ("error" in visionSummary && Object.keys(visionSummary).length <= 1) {
-      return NextResponse.json(
-        {
-          error: String((visionSummary as { error?: string }).error ?? "Vision analysis failed"),
-          generatedQuery: null,
-          shoppingResults: [],
-        },
-        { status: 502 },
-      );
-    }
+Output EXACTLY ONE line: a 4-7 word Google Shopping search query for this specific lingerie item.
 
-    const generatedQuery = await generateShoppingQueryFromVision(visionSummary, anthropicKey);
+Focus on: garment type (bra, bralette, bodysuit, teddy, corset, chemise, thong, panty set), color, material (lace, satin, silk, mesh, velvet), and style (push-up, wireless, strappy, floral, embroidered).
+
+Examples:
+black lace push-up bra set
+red satin strappy bodysuit lingerie
+pink floral lace bralette panty set
+white mesh corset lingerie set
+
+One line only. No quotes. No punctuation at end.`,
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    const claudeData = (await claudeRes.json()) as {
+      content?: Array<{ type: string; text?: string }>;
+      error?: { message?: string };
+    };
+    if (!claudeRes.ok) throw new Error(claudeData.error?.message ?? "Claude error");
+
+    const rawText = claudeData.content?.find((c) => c.type === "text")?.text?.trim() ?? "";
+    const generatedQuery =
+      rawText.split("\n")[0].replace(/^["']|["']$/g, "").trim() || "women lingerie lace set";
 
     const params = new URLSearchParams({
       engine: "google_shopping",
@@ -197,28 +81,27 @@ export async function POST(req: NextRequest) {
       api_key: serpKey,
       num: "12",
     });
-
     const serpRes = await fetch(`https://serpapi.com/search?${params.toString()}`);
     const serpData = (await serpRes.json()) as { shopping_results?: unknown[]; error?: string };
 
     if (!serpRes.ok) {
       return NextResponse.json(
-        {
-          error: serpData.error ?? `SerpApi request failed (${serpRes.status})`,
-          generatedQuery,
-          shoppingResults: [],
-        },
+        { error: serpData.error ?? "SerpApi failed", generatedQuery, shoppingResults: [] },
         { status: 502 },
       );
     }
 
-    const shoppingResults = serpData.shopping_results?.slice(0, 12) || [];
-
-    return NextResponse.json({ generatedQuery, shoppingResults });
+    return NextResponse.json({
+      generatedQuery,
+      shoppingResults: serpData.shopping_results?.slice(0, 12) ?? [],
+    });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Visual search pipeline failed";
     return NextResponse.json(
-      { error: message, generatedQuery: null, shoppingResults: [] },
+      {
+        error: e instanceof Error ? e.message : "Failed",
+        generatedQuery: null,
+        shoppingResults: [],
+      },
       { status: 502 },
     );
   }
