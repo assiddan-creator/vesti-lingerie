@@ -603,31 +603,16 @@ export default function HomePage() {
       <div className="relative z-10 flex w-full flex-col">
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
 
-          {/* ─── Header ─── */}
+          {/* ─── Header (logo over full-bleed hero — no inner banner image) ─── */}
           <header className="mb-10 w-full">
-            <div className="relative w-full overflow-hidden rounded-b-2xl" style={{ height: "200px" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={HERO_IMG}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover object-center"
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(14,14,14,0.5) 45%, rgba(0,0,0,0.72) 100%)",
-                }}
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: "6px" }}>
-                <h1 className="font-headline serif-title text-glow text-[44px] font-bold leading-none tracking-[0.35em] text-foreground">
-                  VESTI
-                </h1>
-                <div className="h-px w-[90px] bg-primary" />
-                <p className="font-label m-0 text-[10px] font-light tracking-[0.5em] text-primary">
-                  LINGERIE
-                </p>
-              </div>
+            <div className="flex flex-col items-center justify-center gap-1.5 py-10 sm:py-12">
+              <h1 className="font-headline serif-title text-glow text-[44px] font-bold leading-none tracking-[0.35em] text-foreground [text-shadow:0_2px_28px_rgba(0,0,0,0.9)]">
+                VESTI
+              </h1>
+              <div className="h-px w-[90px] bg-primary [box-shadow:0_0_12px_rgba(211,18,26,0.45)]" />
+              <p className="font-label m-0 text-[10px] font-light tracking-[0.5em] text-primary [text-shadow:0_1px_16px_rgba(0,0,0,0.85)]">
+                LINGERIE
+              </p>
             </div>
             <p className="mx-auto mt-4 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
               Private try-on. One portrait. Your set. Instant confidence. ✦
