@@ -236,6 +236,29 @@ body {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
+/* Primary CTA: photo background + dark scrim for legible white label text */
+.vesti-cta {
+  position: relative;
+  isolation: isolate;
+  background-image: url("/Button_for_app_202604030618.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.vesti-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.42);
+  z-index: 0;
+  pointer-events: none;
+}
+.vesti-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
 ::selection {
   background-color: rgba(211, 18, 26, 0.35);
   color: #ffffff;

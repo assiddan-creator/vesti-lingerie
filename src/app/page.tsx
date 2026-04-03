@@ -11,15 +11,16 @@ import {
 } from "../lib/body-scan";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
-/** Primary CTA — glass + satin primary */
+/** Primary CTA — photo background + scrim in globals.css (`.vesti-cta`) */
 const shieldButtonClass =
-  "glass-button glass-btn glass-btn-primary rounded-2xl font-semibold text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40";
+  "vesti-cta glass-button overflow-hidden rounded-2xl border border-white/20 font-semibold text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40";
 
 const secondaryLinkButtonClass =
   "glass-button glass-btn glass-btn-secondary rounded-2xl font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
-const HERO_IMG = "/Luxury_fashion_flat_202603252000.jpeg";
+/** Luxury flat-lay hero (Luxury_fashion* — updated asset) */
+const HERO_IMG = "/Luxury_fashion_flat_202603252001.jpeg";
 const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
 
 // ─── ShopTheLookButton ───────────────────────────────────────────────────────
@@ -609,12 +610,15 @@ export default function HomePage() {
               <img
                 src={HERO_IMG}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-                style={{ objectPosition: "center 40%" }}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                style={{ objectPosition: "center 42%" }}
               />
               <div
                 className="absolute inset-0"
-                style={{ background: "linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.65) 100%)" }}
+                style={{
+                  background:
+                    "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(14,14,14,0.5) 45%, rgba(0,0,0,0.72) 100%)",
+                }}
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: "6px" }}>
                 <h1 className="font-headline serif-title text-glow text-[44px] font-bold leading-none tracking-[0.35em] text-foreground">
@@ -820,11 +824,11 @@ export default function HomePage() {
                       className={`relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden px-6 py-4 text-base font-bold uppercase tracking-[0.14em] sm:px-8 sm:tracking-[0.18em] ${shieldButtonClass}`}
                     >
                       {isSubmitting ? (
-                        <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-on-primary sm:text-sm sm:tracking-[0.1em]">
+                        <span className="relative z-[1] text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] sm:text-sm sm:tracking-[0.1em]">
                           AI Analysis &amp; Lingerie Fusion in Progress...
                         </span>
                       ) : (
-                        "Generate"
+                        <span className="relative z-[1] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Generate</span>
                       )}
                     </button>
 
