@@ -11,8 +11,12 @@ import {
 } from "../lib/body-scan";
 import { BodyScanOverlay } from "../components/BodyScanOverlay";
 
+/** Primary CTA — glass + satin primary */
 const shieldButtonClass =
-  "rounded-2xl border-2 border-white font-semibold text-white shadow-[0_0_28px_rgba(255,40,0,0.7),0_0_56px_rgba(255,40,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] transition-[box-shadow,filter] hover:shadow-[0_0_40px_rgba(255,40,0,0.85),0_0_72px_rgba(255,40,0,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2800] disabled:cursor-not-allowed disabled:opacity-40 bg-cover bg-center bg-no-repeat";
+  "glass-button glass-btn glass-btn-primary rounded-2xl font-semibold text-on-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:opacity-40";
+
+const secondaryLinkButtonClass =
+  "glass-button glass-btn glass-btn-secondary rounded-2xl font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
 const HERO_IMG = "/Luxury_fashion_flat_202603252000.jpeg";
@@ -102,7 +106,7 @@ function ShopTheLookButton({
   if (results.length > 0) {
     return (
       <div className="mt-8 w-full max-w-2xl">
-        <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-[#FF2800]">
+        <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           Shop similar pieces
         </p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -112,7 +116,7 @@ function ShopTheLookButton({
               href={item.link ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/60 p-3 transition-colors hover:border-[#FF2800]/60"
+              className="flex flex-col gap-2 rounded-xl border border-outline/30 bg-surface-container/90 p-3 transition-all hover:border-primary/50 hover:rose-glow"
             >
               {item.thumbnail && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -123,9 +127,9 @@ function ShopTheLookButton({
                   style={{ height: "160px" }}
                 />
               )}
-              <p className="line-clamp-2 text-[10px] leading-snug text-white/80">{item.title}</p>
+              <p className="line-clamp-2 text-[10px] leading-snug text-muted-foreground">{item.title}</p>
               {item.price && (
-                <p className="text-[10px] font-bold text-[#FF2800]">{item.price}</p>
+                <p className="text-[10px] font-bold text-primary">{item.price}</p>
               )}
             </a>
           ))}
@@ -135,8 +139,7 @@ function ShopTheLookButton({
             href={`https://www.asos.com/search/?q=${encodeURIComponent(query)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${shieldButtonClass}`}
-            style={{ backgroundImage: `url(${HERO_IMG})` }}
+            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${secondaryLinkButtonClass}`}
           >
             Search on Asos
           </a>
@@ -144,8 +147,7 @@ function ShopTheLookButton({
             href={`https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=shop`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${shieldButtonClass}`}
-            style={{ backgroundImage: `url(${HERO_IMG})` }}
+            className={`flex-1 py-3 text-center text-xs font-bold uppercase tracking-[0.18em] ${secondaryLinkButtonClass}`}
           >
             Search on Google
           </a>
@@ -165,7 +167,7 @@ function ShopTheLookButton({
         {loading ? "Finding similar pieces..." : "Shop this look"}
       </button>
       {error && (
-        <p className="text-xs text-[rgba(255,255,255,0.5)]">Search unavailable</p>
+        <p className="text-xs text-muted-foreground">Search unavailable</p>
       )}
     </div>
   );
@@ -215,10 +217,10 @@ function UploadPortraitCard({
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex w-full max-w-md flex-col items-center gap-4 rounded-2xl border border-white/15 bg-black/50 p-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md sm:p-6">
+    <div className="flex w-full max-w-md flex-col items-center gap-4 rounded-2xl border border-outline/30 bg-surface-container/80 p-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md sm:p-6">
       <div className="flex flex-col items-center gap-1">
-        <span className="text-base font-semibold tracking-wide text-white">Your portrait</span>
-        <span className="text-sm text-[rgba(255,255,255,0.6)]">Face forward, soft light, shoulders visible.</span>
+        <span className="font-headline text-base font-semibold tracking-wide text-foreground">Your portrait</span>
+        <span className="text-sm text-muted-foreground">Face forward, soft light, shoulders visible.</span>
       </div>
 
       <button
@@ -227,10 +229,9 @@ function UploadPortraitCard({
         className={`group relative flex w-full max-w-sm flex-col items-center justify-center gap-3 px-4 ${shieldButtonClass} ${
           preview ? "min-h-[min(72vh,40rem)] sm:min-h-[min(76vh,44rem)]" : "min-h-52"
         }`}
-        style={{ backgroundImage: `url(${HERO_IMG})` }}
       >
         {preview ? (
-          <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-white/10 bg-black p-2 sm:p-3">
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-outline/25 bg-surface-container-lowest p-2 sm:p-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="Your portrait" className="max-h-full max-w-full object-contain" />
           </div>
@@ -239,7 +240,7 @@ function UploadPortraitCard({
             <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-[#FF2800]"
+                className="h-6 w-6 text-primary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -252,7 +253,7 @@ function UploadPortraitCard({
                 />
               </svg>
             </div>
-            <span className="text-sm font-bold uppercase tracking-[0.14em] text-white">Upload photo</span>
+            <span className="text-sm font-bold uppercase tracking-[0.14em] text-on-primary">Upload photo</span>
           </>
         )}
       </button>
@@ -268,7 +269,7 @@ function UploadPortraitCard({
         }}
       />
 
-      <p className="text-xs text-[rgba(255,255,255,0.6)]">Preview only. Images are processed securely.</p>
+      <p className="text-xs text-muted-foreground">Preview only. Images are processed securely.</p>
 
       {preview && (
         <button
@@ -277,7 +278,7 @@ function UploadPortraitCard({
             onClear();
             if (inputRef.current) inputRef.current.value = "";
           }}
-          className="rounded-md border border-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:border-[#FF2800]"
+          className="rounded-md border border-outline/40 px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary"
         >
           Remove
         </button>
@@ -300,15 +301,14 @@ function CustomGarmentUpload({
 
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#FF2800]">Or upload your own</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Or upload your own</p>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
         className={`group flex min-h-[8.5rem] w-full flex-col items-center justify-center gap-2 px-4 py-6 text-center ${shieldButtonClass}`}
-        style={{ backgroundImage: `url(${HERO_IMG})` }}
       >
         {preview ? (
-          <div className="relative flex min-h-44 w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black sm:min-h-52">
+          <div className="relative flex min-h-44 w-full max-w-[240px] items-center justify-center overflow-hidden rounded-xl border border-outline/25 bg-surface-container-lowest sm:min-h-52">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="Custom lingerie reference" className="max-h-full max-w-full object-contain" />
           </div>
@@ -317,7 +317,7 @@ function CustomGarmentUpload({
             <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white bg-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-[#FF2800]"
+                className="h-5 w-5 text-primary"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -330,8 +330,8 @@ function CustomGarmentUpload({
                 />
               </svg>
             </div>
-            <span className="text-sm font-bold uppercase tracking-[0.12em] text-white">Select lingerie — upload</span>
-            <span className="max-w-[240px] text-xs leading-relaxed text-[rgba(255,255,255,0.55)]">
+            <span className="text-sm font-bold uppercase tracking-[0.12em] text-on-primary">Select lingerie — upload</span>
+            <span className="max-w-[240px] text-xs leading-relaxed text-on-primary/80">
               Flat lay or product photo. PNG or JPG.
             </span>
           </>
@@ -354,7 +354,7 @@ function CustomGarmentUpload({
             onClear();
             if (inputRef.current) inputRef.current.value = "";
           }}
-          className="text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white"
+          className="text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground"
         >
           Clear custom upload
         </button>
@@ -371,20 +371,20 @@ function StepIndicator({ currentStep }: { currentStep: 1 | 2 | 3 | 4 }) {
     { n: 3 as const, label: "Generate" },
   ];
   return (
-    <div className="flex items-center justify-center gap-8 border-b border-white pb-5 sm:gap-12">
+    <div className="flex items-center justify-center gap-8 border-b border-outline/30 pb-5 sm:gap-12">
       {steps.map(({ n, label }) => {
         const done = currentStep > n;
         const isActive = currentStep === n;
         const circleClass =
           done || isActive
-            ? "flex h-8 w-8 items-center justify-center rounded-full bg-[#FF2800] text-xs font-bold text-white"
-            : "flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-[#FF2800]";
+            ? "flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary"
+            : "flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-xs font-bold text-primary";
         return (
           <div key={n} className="flex flex-col items-center gap-2">
             <div className={circleClass}>
               <span>{done ? "✓" : n}</span>
             </div>
-            <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-white">{label}</span>
+            <span className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-foreground">{label}</span>
           </div>
         );
       })}
@@ -591,14 +591,13 @@ export default function HomePage() {
         : null;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
-      {/* רקע קטיפה קבוע */}
+    <div className="relative min-h-screen overflow-x-hidden bg-surface text-foreground">
       <div
         className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-fixed"
         style={{ backgroundImage: `url('${HERO_IMG}')` }}
         aria-hidden
       />
-      <div className="pointer-events-none fixed inset-0 z-[1] bg-black/40" aria-hidden />
+      <div className="pointer-events-none fixed inset-0 z-[1] bg-surface-container-lowest/55" aria-hidden />
 
       <div className="relative z-10 flex w-full flex-col">
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-4 py-10 text-center sm:px-6 sm:py-14">
@@ -618,16 +617,16 @@ export default function HomePage() {
                 style={{ background: "linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.65) 100%)" }}
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ gap: "6px" }}>
-                <h1 style={{ fontFamily: "Georgia,serif", fontSize: "44px", fontWeight: 700, letterSpacing: "16px", color: "#fff", margin: 0, lineHeight: 1, textShadow: "0 2px 20px rgba(0,0,0,0.8)" }}>
+                <h1 className="font-headline serif-title text-glow text-[44px] font-bold leading-none tracking-[0.35em] text-foreground">
                   VESTI
                 </h1>
-                <div style={{ width: "90px", height: "1px", background: "#FF2800" }} />
-                <p style={{ fontFamily: "sans-serif", fontSize: "10px", fontWeight: 300, letterSpacing: "8px", color: "#FF2800", margin: 0 }}>
+                <div className="h-px w-[90px] bg-primary" />
+                <p className="font-label m-0 text-[10px] font-light tracking-[0.5em] text-primary">
                   LINGERIE
                 </p>
               </div>
             </div>
-            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-center" style={{ color: "rgba(255,255,255,0.7)" }}>
+            <p className="mx-auto mt-4 max-w-md text-center text-sm leading-relaxed text-muted-foreground">
               Private try-on. One portrait. Your set. Instant confidence. ✦
             </p>
           </header>
@@ -653,7 +652,7 @@ export default function HomePage() {
                     onClear={() => setPersonFile(null)}
                   />
                   {personPreview && bodyScanLoading && (
-                    <p className="mt-3 max-w-md text-xs text-[rgba(255,255,255,0.55)]">
+                    <p className="mt-3 max-w-md text-xs text-muted-foreground">
                       Mapping your silhouette for accurate sizing…
                     </p>
                   )}
@@ -662,7 +661,6 @@ export default function HomePage() {
                     disabled={!personFile}
                     onClick={() => setCurrentStep(2)}
                     className={`mt-8 w-full max-w-md px-6 py-3.5 text-sm uppercase tracking-[0.18em] ${shieldButtonClass}`}
-                    style={{ backgroundImage: `url(${HERO_IMG})` }}
                   >
                     Continue
                   </button>
@@ -679,7 +677,7 @@ export default function HomePage() {
                   transition={{ duration: 0.25 }}
                   className="mx-auto flex w-full flex-col items-center text-center"
                 >
-                  <p className="mb-6 text-sm text-[rgba(255,255,255,0.6)]">
+                  <p className="mb-6 text-sm text-muted-foreground">
                     Upload your own reference, or choose a preset from our gallery.
                   </p>
 
@@ -691,14 +689,14 @@ export default function HomePage() {
 
                   <div className="my-8 flex w-full max-w-md items-center gap-4">
                     <div className="h-px flex-1 bg-white/15" />
-                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.45)]">
+                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                       Presets
                     </span>
                     <div className="h-px flex-1 bg-white/15" />
                   </div>
 
                   {presetLooks.length === 0 ? (
-                    <p className="text-sm text-[rgba(255,255,255,0.6)]">Loading sets…</p>
+                    <p className="text-sm text-muted-foreground">Loading sets…</p>
                   ) : (
                     <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
                       {presetLooks.map((look) => {
@@ -710,10 +708,9 @@ export default function HomePage() {
                             onClick={() => void selectPresetLook(look)}
                             className={
                               selected
-                                ? `${shieldButtonClass} rounded-2xl p-1 ring-2 ring-[#FF2800]`
-                                : `${shieldButtonClass} rounded-2xl p-1 opacity-95 hover:opacity-100`
+                                ? `${shieldButtonClass} rose-glow rounded-2xl p-1 ring-2 ring-primary`
+                                : `${shieldButtonClass} rounded-2xl p-1 opacity-95 transition-shadow hover:opacity-100 hover:rose-glow`
                             }
-                            style={{ backgroundImage: `url(${HERO_IMG})` }}
                           >
                             <div
                               className="relative w-full overflow-hidden rounded-xl"
@@ -731,7 +728,7 @@ export default function HomePage() {
                                 className="h-full w-full object-contain"
                               />
                             </div>
-                            <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-white">
+                            <p className="px-2 py-2 text-center text-xs font-medium leading-snug text-foreground">
                               {look.title}
                             </p>
                           </button>
@@ -744,8 +741,7 @@ export default function HomePage() {
                     <button
                       type="button"
                       onClick={() => setCurrentStep(1)}
-                      className={`px-8 py-3 text-sm font-semibold text-white ${shieldButtonClass}`}
-                      style={{ backgroundImage: `url(${HERO_IMG})` }}
+                      className={`px-8 py-3 text-sm font-semibold text-on-primary ${shieldButtonClass}`}
                     >
                       Back
                     </button>
@@ -769,7 +765,7 @@ export default function HomePage() {
                         <div className="flex w-full max-w-[280px] flex-col items-center gap-2">
                           <div
                             ref={portraitScanContainerRef}
-                            className={`relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black ${
+                            className={`relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-outline/25 bg-surface-container-lowest ${
                               isSubmitting ? "h-[400px]" : "h-[400px]"
                             }`}
                           >
@@ -788,7 +784,7 @@ export default function HomePage() {
                               measurementValues={bodyScanResult?.measurementValues ?? FALLBACK_MEASUREMENTS}
                             />
                           </div>
-                          <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">You</span>
+                          <span className="text-xs uppercase tracking-widest text-muted-foreground">You</span>
                         </div>
                       )}
 
@@ -796,7 +792,7 @@ export default function HomePage() {
                       {garmentPreview && !isSubmitting && (
                         <div className="flex w-full max-w-[280px] flex-col items-center gap-2">
                           <div
-                            className="relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-white/15 bg-black"
+                            className="relative flex w-full items-center justify-center overflow-hidden rounded-xl border border-outline/25 bg-surface-container-lowest"
                             style={{ height: "400px" }}
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -806,13 +802,13 @@ export default function HomePage() {
                               className="max-h-full max-w-full object-contain"
                             />
                           </div>
-                          <span className="text-xs uppercase tracking-widest text-[rgba(255,255,255,0.6)]">Set</span>
+                          <span className="text-xs uppercase tracking-widest text-muted-foreground">Set</span>
                         </div>
                       )}
                     </div>
 
                     {apiError && (
-                      <p className="mb-6 max-w-md rounded-xl border border-[#FF2800] bg-black/60 px-4 py-3 text-sm text-white">
+                      <p className="mb-6 max-w-md rounded-xl border border-primary bg-surface-container/90 px-4 py-3 text-sm text-foreground">
                         {apiError.error?.message ?? "Something went wrong."}
                       </p>
                     )}
@@ -822,10 +818,9 @@ export default function HomePage() {
                       disabled={!personFile || !garmentFile || isSubmitting}
                       onClick={() => void handleGenerate()}
                       className={`relative inline-flex min-h-[3.5rem] w-full max-w-md touch-manipulation items-center justify-center overflow-hidden px-6 py-4 text-base font-bold uppercase tracking-[0.14em] sm:px-8 sm:tracking-[0.18em] ${shieldButtonClass}`}
-                      style={{ backgroundImage: `url(${HERO_IMG})` }}
                     >
                       {isSubmitting ? (
-                        <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-white sm:text-sm sm:tracking-[0.1em]">
+                        <span className="text-center text-[11px] font-bold leading-snug tracking-[0.06em] text-on-primary sm:text-sm sm:tracking-[0.1em]">
                           AI Analysis &amp; Lingerie Fusion in Progress...
                         </span>
                       ) : (
@@ -837,7 +832,7 @@ export default function HomePage() {
                       type="button"
                       disabled={isSubmitting}
                       onClick={() => setCurrentStep(2)}
-                      className="mt-6 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Back
                     </button>
@@ -854,7 +849,7 @@ export default function HomePage() {
                   transition={{ duration: 0.3 }}
                   className="mx-auto flex w-full flex-col items-center text-center"
                 >
-                  <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/10 bg-black p-2 shadow-[0_0_60px_rgba(255,40,0,0.15)] sm:p-3">
+                  <div className="mx-auto w-full max-w-2xl rounded-2xl border border-outline/30 bg-surface-container p-2 shadow-[0_0_60px_rgba(211,18,26,0.18)] sm:p-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={resultUrl}
@@ -863,25 +858,25 @@ export default function HomePage() {
                     />
                   </div>
 
-                  <div className="mt-10 w-full max-w-md rounded-2xl border border-white/12 bg-black/50 px-6 py-6 backdrop-blur-sm">
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#FF2800]">Fit insight</p>
-                    <p className="mt-4 text-lg font-medium leading-relaxed text-white">
+                  <div className="mt-10 w-full max-w-md rounded-2xl border border-outline/30 bg-surface-container/80 px-6 py-6 backdrop-blur-sm">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Fit insight</p>
+                    <p className="mt-4 text-lg font-medium leading-relaxed text-foreground">
                       AI Body Scan Complete. Your perfect fit for this set is{" "}
-                      <span className="whitespace-nowrap font-semibold text-white">
+                      <span className="whitespace-nowrap font-semibold text-foreground">
                         {bodyScanResult?.recommendedBraSize ?? "—"}
                       </span>
                       .
                     </p>
                     {bodyScanResult?.bodyAnalysis && (
-                      <p className="mt-3 text-sm leading-relaxed text-[rgba(255,255,255,0.75)]">
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                         {bodyScanResult.bodyAnalysis}
                       </p>
                     )}
-                    <p className="mt-3 text-[11px] text-[rgba(255,255,255,0.5)]">
+                    <p className="mt-3 text-[11px] text-muted-foreground/80">
                       Confidence: {bodyScanResult?.confidence ?? "—"}
                       {bodyScanResult?.fallback ? " · Estimate only" : ""}
                     </p>
-                    <p className="mt-2 text-xs text-[rgba(255,255,255,0.6)]">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       Sizing is illustrative for this experience. Always confirm in-store or with a fit specialist.
                     </p>
                   </div>
@@ -891,7 +886,7 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={resetFlow}
-                    className="mt-8 text-xs font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.6)] underline-offset-4 hover:text-white hover:underline"
+                    className="mt-8 text-xs font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                   >
                     Try another look
                   </button>

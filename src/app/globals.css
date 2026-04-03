@@ -5,11 +5,28 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Vesti Lingerie — luxury dark palette */
+  --color-surface: #131313;
+  --color-surface-container: #201f1f;
+  --color-surface-container-low: #1c1b1b;
+  --color-surface-container-lowest: #0e0e0e;
+  --color-primary: #d3121a;
+  --color-primary-container: #d3121a;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #ffffff;
+  --color-secondary: #c8c6c5;
+  --color-outline: #ae8883;
+  --color-outline-variant: #5d3f3c;
+
+  --font-headline: var(--font-noto-serif), "Noto Serif", ui-serif, Georgia, serif;
+  --font-body: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-label: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-headline);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -64,72 +81,72 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #131313;
+  --foreground: #e5e2e1;
+  --card: #201f1f;
+  --card-foreground: #e5e2e1;
+  --popover: #201f1f;
+  --popover-foreground: #e5e2e1;
+  --primary: #d3121a;
+  --primary-foreground: #ffffff;
+  --secondary: #1c1b1b;
+  --secondary-foreground: #c8c6c5;
+  --muted: #1c1b1b;
+  --muted-foreground: #c8c6c5;
+  --accent: #5d3f3c;
+  --accent-foreground: #e5e2e1;
+  --destructive: #d3121a;
+  --border: rgba(174, 136, 131, 0.35);
+  --input: rgba(174, 136, 131, 0.25);
+  --ring: #d3121a;
+  --chart-1: #d3121a;
+  --chart-2: #ae8883;
+  --chart-3: #5d3f3c;
+  --chart-4: #c8c6c5;
+  --chart-5: #201f1f;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #201f1f;
+  --sidebar-foreground: #e5e2e1;
+  --sidebar-primary: #d3121a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1c1b1b;
+  --sidebar-accent-foreground: #e5e2e1;
+  --sidebar-border: rgba(174, 136, 131, 0.35);
+  --sidebar-ring: #d3121a;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #131313;
+  --foreground: #e5e2e1;
+  --card: #201f1f;
+  --card-foreground: #e5e2e1;
+  --popover: #201f1f;
+  --popover-foreground: #e5e2e1;
+  --primary: #d3121a;
+  --primary-foreground: #ffffff;
+  --secondary: #1c1b1b;
+  --secondary-foreground: #c8c6c5;
+  --muted: #1c1b1b;
+  --muted-foreground: #c8c6c5;
+  --accent: #5d3f3c;
+  --accent-foreground: #e5e2e1;
+  --destructive: #d3121a;
+  --border: rgba(174, 136, 131, 0.35);
+  --input: rgba(174, 136, 131, 0.25);
+  --ring: #d3121a;
+  --chart-1: #d3121a;
+  --chart-2: #ae8883;
+  --chart-3: #5d3f3c;
+  --chart-4: #c8c6c5;
+  --chart-5: #201f1f;
+  --sidebar: #201f1f;
+  --sidebar-foreground: #e5e2e1;
+  --sidebar-primary: #d3121a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1c1b1b;
+  --sidebar-accent-foreground: #e5e2e1;
+  --sidebar-border: rgba(174, 136, 131, 0.35);
+  --sidebar-ring: #d3121a;
 }
 
 @layer base {
@@ -137,45 +154,102 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
   }
   html {
-    @apply font-sans;
+    @apply font-body;
   }
-}
-
-html {
-  background-image: url("/Luxury_fashion_flat_202603252000.jpeg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-color: #000000;
 }
 
 body {
-  background-color: #000000;
-  background-image: url("/Luxury_fashion_flat_202603252000.jpeg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-color: #131313;
+  color: #e5e2e1;
+  font-family: var(--font-manrope), "Manrope", sans-serif;
+}
+
+.serif-title {
+  font-family: var(--font-noto-serif), "Noto Serif", serif;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Luxury Glow & Gradients */
+.text-glow {
+  text-shadow: 0 0 15px rgba(211, 18, 26, 0.4);
+}
+.rose-glow {
+  box-shadow: 0 0 20px rgba(211, 18, 26, 0.25);
+}
+.bg-silk-gradient {
+  background: radial-gradient(circle at center, rgba(211, 18, 26, 0.8) 0%, rgba(122, 10, 15, 0.8) 100%);
+}
+
+/* Glassmorphism Buttons */
+.glass-btn {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.glass-btn-primary {
+  background: rgba(211, 18, 26, 0.35);
+  border: 1px solid rgba(211, 18, 26, 0.4);
+}
+.glass-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-button {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.glass-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+  opacity: 0;
+  transition:
+    opacity 0.5s,
+    transform 0.5s;
+  transform: scale(0.5);
+  pointer-events: none;
+}
+.glass-button:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+.glass-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
 ::selection {
-  background-color: rgba(255, 40, 0, 0.3);
+  background-color: rgba(211, 18, 26, 0.35);
   color: #ffffff;
 }
 
 /* Upload areas */
 .upload-zone {
-  background: rgba(0, 0, 0, 0.5) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(32, 31, 31, 0.85) !important;
+  border-color: rgba(174, 136, 131, 0.35) !important;
 }
 
 /* Text input / textarea */
 textarea,
 input[type="text"] {
-  background: rgba(0, 0, 0, 0.5) !important;
-  color: #ffffff !important;
+  background: rgba(28, 27, 27, 0.9) !important;
+  color: #e5e2e1 !important;
 }

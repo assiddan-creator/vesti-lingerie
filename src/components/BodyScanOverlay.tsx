@@ -175,9 +175,9 @@ export function BodyScanOverlay({
       <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
           <linearGradient id="scan-beam" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#FF2800" stopOpacity="0" />
-            <stop offset="50%" stopColor="#FF2800" stopOpacity="0.22" />
-            <stop offset="100%" stopColor="#FF2800" stopOpacity="0" />
+            <stop offset="0%" stopColor="#D3121A" stopOpacity="0" />
+            <stop offset="50%" stopColor="#D3121A" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#D3121A" stopOpacity="0" />
           </linearGradient>
         </defs>
         <motion.rect
@@ -194,8 +194,8 @@ export function BodyScanOverlay({
       {layout.shoulderDots.map((d, i) => (
         <div
           key={`sd-${i}`}
-          className="absolute h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FF2800]"
-          style={{ left: `${d.x}%`, top: `${d.y}%`, boxShadow: "0 0 4px rgba(255,40,0,0.9)" }}
+          className="absolute h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
+          style={{ left: `${d.x}%`, top: `${d.y}%`, boxShadow: "0 0 4px rgba(211,18,26,0.9)" }}
         />
       ))}
 
@@ -216,7 +216,7 @@ export function BodyScanOverlay({
               letterSpacing: "0.15em",
               color: "#ffffff",
               whiteSpace: "nowrap",
-              textShadow: "0 1px 6px rgba(0,0,0,1), 0 0 10px rgba(255,40,0,0.5)",
+              textShadow: "0 1px 6px rgba(0,0,0,1), 0 0 10px rgba(211,18,26,0.5)",
             }}
           >
             {slot.text}
