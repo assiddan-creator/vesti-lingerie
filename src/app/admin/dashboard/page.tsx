@@ -180,7 +180,7 @@ export default function MerchantDashboardPage() {
     <div className="relative min-h-screen bg-black text-white">
       <div className="pointer-events-none fixed inset-0 z-0">
         <Image
-          src="/Luxury_fashion_flat_202603252001.jpeg"
+          src="/Replace_products_with_202604030606.jpeg"
           alt=""
           fill
           className="object-cover object-center opacity-[0.12]"

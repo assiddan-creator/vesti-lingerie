@@ -19,8 +19,8 @@ const secondaryLinkButtonClass =
   "glass-button glass-btn glass-btn-secondary rounded-2xl font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-outline focus-visible:ring-offset-2 focus-visible:ring-offset-surface";
 
 const VELVET_BG = "/Black_velvet_background_202603301114.jpeg";
-/** Luxury flat-lay hero (Luxury_fashion* — updated asset) */
-const HERO_IMG = "/Luxury_fashion_flat_202603252001.jpeg";
+/** Main hero — full-bleed background + header banner */
+const HERO_IMG = "/Replace_products_with_202604030606.jpeg";
 const SEEDREAM_ENDPOINT = "/api/clothes-swap/seedream";
 
 // ─── ShopTheLookButton ───────────────────────────────────────────────────────
@@ -611,7 +611,6 @@ export default function HomePage() {
                 src={HERO_IMG}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover object-center"
-                style={{ objectPosition: "center 42%" }}
               />
               <div
                 className="absolute inset-0"
